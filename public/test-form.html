@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEST FORM - LinkedIn Job Scraper</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: sans-serif; padding: 2em; }
+        .container { max-width: 800px; margin: auto; }
+        form { display: flex; flex-direction: column; gap: 1rem; }
+        textarea, select, input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 15px; border: none; background-color: #007bff; color: white; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #statusSection, #debug-panel { margin-top: 1rem; padding: 1rem; border: 1px solid #eee; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LinkedIn Lead Scraper (TEST PAGE)</h1>
+        <p>This is a self-contained test page. All styles and scripts from the original form are included.</p>
+
+        <!-- Search Form -->
+        <form id="scrapeForm">
+            <label>Job Title</label>
+            <textarea id="jobTitle" name="jobTitle" required>Finance Manager, Accounting Specialist, Financial Analyst</textarea>
+
+            <label>Location</label>
+            <textarea id="jobLocation" name="jobLocation" required>United Kingdom</textarea>
+
+            <label>Company Name (Optional)</label>
+            <input type="text" id="companyName" name="companyName">
+
+            <label>Published At</label>
+            <select id="publishedAt" name="publishedAt">
+                <option value="Any Time">Any Time</option>
+                <option value="Past Month">Past Month</option>
+                <option value="Past Week" selected>Past Week</option>
+                <option value="Past 24 hours">Past 24 hours</option>
+            </select>
+
+            <label>Job Type</label>
+            <select id="jobType" name="jobType">
+                <option value="Full-time" selected>Full-time</option>
+                <option value="Part-time">Part-time</option>
+                <option value="Contract">Contract</option>
+                <option value="Temporary">Temporary</option>
+                <option value="Internship">Internship</option>
+                <option value="Volunteer">Volunteer</option>
+            </select>
+
+            <label>Work Type</label>
+            <select id="workType" name="workType">
+                <option value="On-site">On-site</option>
+                <option value="Remote">Remote</option>
+                <option value="Hybrid">Hybrid</option>
+            </select>
+
+            <label>Experience Level</label>
+            <select id="experienceLevel" name="experienceLevel">
+                <option value="Internship">Internship</option>
+                <option value="Entry Level">Entry Level</option>
+                <option value="Associate" selected>Associate</option>
+                <option value="Mid-Senior Level">Mid-Senior Level</option>
+                <option value="Director">Director</option>
+            </select>
+
+            <label>Number of Results</label>
+            <select id="totalRows" name="totalRows">
+                <option value="25" selected>25 jobs</option>
+                <option value="50">50 jobs</option>
+                <option value="100">100 jobs</option>
+            </select>
+
+            <button type="submit" id="submitBtn">Start Job Scraping</button>
+        </form>
+
+        <!-- Status Section -->
+        <div id="statusSection" class="hidden">
+            <h3>Workflow Status</h3>
+            <div id="statusContainer"></div>
+        </div>
+        
+        <!-- Debug Panel -->
+        <div id="debug-panel" class="hidden">
+            <h3>Debug Information</h3>
+            <pre id="debug-content"></pre>
+        </div>
+    </div>
+
+    <!-- Configuration and Scripts -->
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html> 

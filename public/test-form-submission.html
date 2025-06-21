@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Form Submission - LinkedIn Scraper</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .debug { background: #f8f9fa; padding: 15px; border-radius: 4px; margin-top: 20px; }
+        .debug h3 { margin-top: 0; }
+        pre { background: #e9ecef; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Form Submission - LinkedIn Scraper</h1>
+    <p>This page tests the exact data format being sent to the n8n webhook.</p>
+
+    <form id="testForm">
+        <div class="form-group">
+            <label for="jobTitle">Job Title *</label>
+            <input type="text" id="jobTitle" name="jobTitle" value="Software Engineer" required>
+        </div>
+
+        <div class="form-group">
+            <label for="jobLocation">Job Location *</label>
+            <input type="text" id="jobLocation" name="jobLocation" value="San Francisco, CA" required>
+        </div>
+
+        <div class="form-group">
+            <label for="totalRows">Total Jobs to Scrape</label>
+            <input type="number" id="totalRows" name="totalRows" value="10" min="1" max="100">
+        </div>
+
+        <div class="form-group">
+            <label for="companyName">Company Name</label>
+            <input type="text" id="companyName" name="companyName" value="Google">
+        </div>
+
+        <div class="form-group">
+            <label for="publishedAt">Published At</label>
+            <select id="publishedAt" name="publishedAt">
+                <option value="Any Time">Any Time</option>
+                <option value="Past Month" selected>Past Month</option>
+                <option value="Past Week">Past Week</option>
+                <option value="Past 24 hours">Past 24 hours</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="jobType">Job Type</label>
+            <select id="jobType" name="jobType">
+                <option value="">Select Job Type</option>
+                <option value="Full-time" selected>Full-time</option>
+                <option value="Part-time">Part-time</option>
+                <option value="Contract">Contract</option>
+                <option value="Temporary">Temporary</option>
+                <option value="Internship">Internship</option>
+                <option value="Volunteer">Volunteer</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="workType">Work Type</label>
+            <select id="workType" name="workType">
+                <option value="">Select Work Type</option>
+                <option value="On-site">On-site</option>
+                <option value="Remote" selected>Remote</option>
+                <option value="Hybrid">Hybrid</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="experienceLevel">Experience Level</label>
+            <select id="experienceLevel" name="experienceLevel">
+                <option value="">Select Experience Level</option>
+                <option value="Internship">Internship</option>
+                <option value="Entry Level">Entry Level</option>
+                <option value="Associate">Associate</option>
+                <option value="Mid-Senior Level" selected>Mid-Senior Level</option>
+                <option value="Director">Director</option>
+            </select>
+        </div>
+
+        <button type="submit">🧪 Test Webhook Submission</button>
+    </form>
+
+    <div class="debug" id="debugSection" style="display: none;">
+        <h3>🔍 Debug Information</h3>
+        <div id="debugContent"></div>
+    </div>
+
+    <script>
+        const WEBHOOK_URL = 'https://myva.ngrok.app/form/56729510-e43f-4aee-9878-16043881f687';
+
+        document.getElementById('testForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            
+            // Show what FormData contains
+            console.log('🔍 FormData entries:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`  "${key}": "${value}"`);
+            }
+            
+            // Create the exact same data format as the main script.js
+            const searchCriteria = {
+                'Job Title': formData.get('jobTitle'),
+                'Job Location': formData.get('jobLocation'),
+                'Company Name': formData.get('companyName') || '',
+                'Published at': formData.get('publishedAt'),
+                'Job Type': formData.get('jobType'),
+                'On-site/Remote/Hybrid': formData.get('workType'),
+                'Experience Level': formData.get('experienceLevel'),
+                'Date posted': parseInt(formData.get('totalRows')) || 25
+            };
+            
+            console.log('🎯 Sending data to webhook:', searchCriteria);
+            
+            // Show debug info
+            const debugSection = document.getElementById('debugSection');
+            const debugContent = document.getElementById('debugContent');
+            
+            debugContent.innerHTML = `
+                <h4>📤 Data being sent to webhook:</h4>
+                <pre>${JSON.stringify(searchCriteria, null, 2)}</pre>
+                <h4>🌐 Webhook URL:</h4>
+                <pre>${WEBHOOK_URL}</pre>
+                <h4>📊 Request Status:</h4>
+                <div id="requestStatus">Sending...</div>
+            `;
+            debugSection.style.display = 'block';
+            
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Basic ' + btoa('sage@myai.ad:T3sla12e!')
+                    },
+                    body: JSON.stringify(searchCriteria)
+                });
+                
+                const responseText = await response.text();
+                
+                document.getElementById('requestStatus').innerHTML = `
+                    <div style="color: ${response.ok ? 'green' : 'red'};">
+                        Status: ${response.status} ${response.statusText}
+                    </div>
+                    <h4>📥 Response:</h4>
+                    <pre>${responseText}</pre>
+                `;
+                
+                console.log('✅ Response:', response.status, responseText);
+                
+            } catch (error) {
+                document.getElementById('requestStatus').innerHTML = `
+                    <div style="color: red;">❌ Error: ${error.message}</div>
+                `;
+                console.error('❌ Request failed:', error);
+            }
+        });
+    </script>
+</body>
+</html> 

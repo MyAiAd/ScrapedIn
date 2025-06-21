@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScrapedIn - API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>ScrapedIn API Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: API Connection</h2>
+        <button onclick="testAPIConnection()">Test API Connection</button>
+        <div id="connection-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: Form Data Format</h2>
+        <button onclick="testFormDataFormat()">Test Form Data Format</button>
+        <div id="format-result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: Full Job Search</h2>
+        <button onclick="testFullJobSearch()">Test Full Job Search</button>
+        <div id="search-result"></div>
+    </div>
+
+    <script>
+        async function testAPIConnection() {
+            const resultDiv = document.getElementById('connection-result');
+            resultDiv.innerHTML = '<p>Testing API connection...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/scrape-jobs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ test: true })
+                });
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = '<p class="success">✅ API is reachable!</p>';
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ API returned status: ${response.status}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Connection failed: ${error.message}</p>`;
+            }
+        }
+        
+        async function testFormDataFormat() {
+            const resultDiv = document.getElementById('format-result');
+            resultDiv.innerHTML = '<p>Testing form data format...</p>';
+            
+            // This is the exact format the frontend should send
+            const testData = {
+                'Job Title': 'Software Engineer',
+                'Job Location': 'London',
+                'Company Name': '',
+                'Job Type': 'Full-time',
+                'Experience Level': 'Associate',
+                'On-site/Remote/Hybrid': 'On-site',
+                'Published at': 'Past Week',
+                'Total Jobs to Scrape': 3
+            };
+            
+            resultDiv.innerHTML = `
+                <p>Sending data format:</p>
+                <pre>${JSON.stringify(testData, null, 2)}</pre>
+                <p>Testing...</p>
+            `;
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/scrape-jobs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.innerHTML += `<p class="success">✅ Data format accepted! Found ${result.jobs?.length || 0} jobs</p>`;
+                } else {
+                    resultDiv.innerHTML += `<p class="error">❌ Error: ${result.error}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML += `<p class="error">❌ Request failed: ${error.message}</p>`;
+            }
+        }
+        
+        async function testFullJobSearch() {
+            const resultDiv = document.getElementById('search-result');
+            resultDiv.innerHTML = '<p>Running full job search test...</p>';
+            
+            const searchData = {
+                'Job Title': 'Finance Manager',
+                'Job Location': 'United Kingdom',
+                'Company Name': '',
+                'Job Type': 'Full-time',
+                'Experience Level': 'Associate',
+                'On-site/Remote/Hybrid': 'On-site',
+                'Published at': 'Past Week',
+                'Total Jobs to Scrape': 5
+            };
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/scrape-jobs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(searchData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Job Search Successful!</h3>
+                            <p><strong>Total Found:</strong> ${result.totalFound || 0}</p>
+                            <p><strong>Processed:</strong> ${result.jobs?.length || 0}</p>
+                            <p><strong>Message:</strong> ${result.message}</p>
+                        </div>
+                        <h4>Sample Jobs:</h4>
+                        <pre>${JSON.stringify(result.jobs?.slice(0, 2) || [], null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Search failed: ${result.error}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Request failed: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html> 

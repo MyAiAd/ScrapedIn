@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScrapedIn - LinkedIn Recruitment Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0077b5 0%, #00a0dc 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .brand-logo h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .nav-bar {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+            margin-bottom: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: #0077b5;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            background: #f8f9fa;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #0077b5;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 119, 181, 0.3);
+        }
+
+        .status-bar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .status-item {
+            text-align: center;
+            color: #0077b5;
+        }
+
+        .status-item .value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #0077b5;
+        }
+
+        .status-item .label {
+            font-size: 0.9rem;
+            color: #0077b5;
+            opacity: 1;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online {
+            background: #10b981;
+        }
+
+        .status-offline {
+            background: #ef4444;
+        }
+
+        .status-warning {
+            background: #f59e0b;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0077b5, #00a0dc);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #0077b5, #00a0dc);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #1f2937;
+        }
+
+        .card p {
+            color: #4b5563;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0077b5, #00a0dc);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 119, 181, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .quick-stats {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+
+        .quick-stats h3 {
+            margin-bottom: 20px;
+            color: #1f2937;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .stat-item .number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #0077b5;
+            margin-bottom: 5px;
+        }
+
+        .stat-item .label {
+            font-size: 0.8rem;
+            color: #4b5563;
+        }
+
+        .recent-activity {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            background: #f3f4f6;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1rem;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 2px;
+        }
+
+        .activity-time {
+            font-size: 0.8rem;
+            color: #4b5563;
+        }
+
+        .footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 40px;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .main-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .status-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0077b5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="brand-logo">
+                <h1>Scraped<span style="background: #0077b5; color: white; padding: 4px 8px; border-radius: 8px; margin-left: 5px;">in</span></h1>
+            </div>
+            <p>Your complete LinkedIn recruitment automation platform</p>
+        </div>
+
+        <!-- Navigation Bar -->
+        <div class="nav-bar">
+            <div class="nav-links">
+                <a href="/" class="nav-link active">🏠 Dashboard</a>
+                <a href="/scraper" class="nav-link">🔍 Scraper</a>
+                <a href="/email-templates" class="nav-link">🤖 Email Templates</a>
+                <a href="/settings" class="nav-link">⚙️ Settings</a>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="value">
+                    <span class="status-indicator" id="serverStatus"></span>
+                    <span id="serverStatusText">Checking...</span>
+                </div>
+                <div class="label">Server Status</div>
+            </div>
+            <div class="status-item">
+                <div class="value">
+                    <span class="status-indicator" id="aiStatus"></span>
+                    <span id="aiStatusText">Checking...</span>
+                </div>
+                <div class="label">AI Providers</div>
+            </div>
+            <div class="status-item">
+                <div class="value">
+                    <span class="status-indicator" id="emailStatus"></span>
+                    <span id="emailStatusText">Checking...</span>
+                </div>
+                <div class="label">Email Service</div>
+            </div>
+            <div class="status-item">
+                <div class="value">
+                    <span class="status-indicator" id="sheetsStatus"></span>
+                    <span id="sheetsStatusText">Checking...</span>
+                </div>
+                <div class="label">Google Sheets</div>
+            </div>
+        </div>
+
+        <!-- Main Features Grid -->
+        <div class="main-grid">
+            <!-- LinkedIn Scraper -->
+            <div class="card">
+                <div class="card-icon">🔍</div>
+                <h3>LinkedIn Job Scraper</h3>
+                <p>Search and scrape LinkedIn jobs with advanced filters. Extract job details, company information, and contact data automatically.</p>
+                <div class="card-actions">
+                    <a href="/scraper" class="btn btn-primary">
+                        🚀 Start Scraping
+                    </a>
+                    <a href="/test-frontend.html" class="btn btn-secondary">
+                        🧪 Test Interface
+                    </a>
+                </div>
+            </div>
+
+            <!-- Email Templates -->
+            <div class="card">
+                <div class="card-icon">🤖</div>
+                <h3>AI Email Templates</h3>
+                <p>Generate personalized outreach emails using AI. Multiple templates, research integration, and professional formatting.</p>
+                <div class="card-actions">
+                    <a href="/email-templates" class="btn btn-primary">
+                        ✉️ Manage Templates
+                    </a>
+                    <a href="#" onclick="generateTestEmail()" class="btn btn-secondary">
+                        🎯 Quick Generate
+                    </a>
+                </div>
+            </div>
+
+            <!-- Database & Analytics -->
+            <div class="card">
+                <div class="card-icon">📊</div>
+                <h3>Data & Analytics</h3>
+                <p>View scraped jobs, email queue status, and performance analytics. Track your recruitment pipeline.</p>
+                <div class="card-actions">
+                    <a href="#" onclick="viewJobs()" class="btn btn-primary">
+                        📋 View Jobs
+                    </a>
+                    <a href="#" onclick="viewAnalytics()" class="btn btn-secondary">
+                        📈 Analytics
+                    </a>
+                </div>
+            </div>
+
+            <!-- Settings & Configuration -->
+            <div class="card">
+                <div class="card-icon">⚙️</div>
+                <h3>Settings & Config</h3>
+                <p>Configure API keys, email settings, Google Sheets integration, and system preferences.</p>
+                <div class="card-actions">
+                    <a href="/settings" class="btn btn-primary">
+                        🔧 Settings
+                    </a>
+                    <a href="#" onclick="testSystem()" class="btn btn-secondary">
+                        🔍 System Test
+                    </a>
+                </div>
+            </div>
+
+            <!-- Email Queue -->
+            <div class="card">
+                <div class="card-icon">📬</div>
+                <h3>Email Queue</h3>
+                <p>Manage outbound emails, track delivery status, and handle email campaigns with retry logic.</p>
+                <div class="card-actions">
+                    <a href="#" onclick="viewEmailQueue()" class="btn btn-primary">
+                        📨 View Queue
+                    </a>
+                    <a href="#" onclick="sendTestEmail()" class="btn btn-secondary">
+                        🧪 Send Test
+                    </a>
+                </div>
+            </div>
+
+            <!-- Google Sheets -->
+            <div class="card">
+                <div class="card-icon">📑</div>
+                <h3>Google Sheets</h3>
+                <p>Export data to Google Sheets, manage spreadsheet integration, and sync job data automatically.</p>
+                <div class="card-actions">
+                    <a href="#" onclick="openGoogleSheets()" class="btn btn-primary">
+                        📊 Open Sheets
+                    </a>
+                    <a href="#" onclick="testSheetsConnection()" class="btn btn-secondary">
+                        🔗 Test Connection
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+            <h3>📈 Quick Statistics</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="number" id="totalJobs">-</div>
+                    <div class="label">Total Jobs</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number" id="emailsSent">-</div>
+                    <div class="label">Emails Sent</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number" id="templatesCount">-</div>
+                    <div class="label">Templates</div>
+                </div>
+                <div class="stat-item">
+                    <div class="number" id="successRate">-</div>
+                    <div class="label">Success Rate</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="recent-activity">
+            <h3>🕒 Recent Activity</h3>
+            <div id="activityList">
+                <div class="activity-item">
+                    <div class="activity-icon">🔄</div>
+                    <div class="activity-content">
+                        <div class="activity-title">Loading recent activity...</div>
+                        <div class="activity-time">Please wait</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>ScrapedIn v2.0 | Enhanced with AI Email Generation</p>
+            <p>Built with Node.js, Express, and modern web technologies</p>
+        </div>
+    </div>
+
+    <script>
+        // Dashboard functionality
+        let systemStatus = {
+            server: false,
+            ai: false,
+            email: false,
+            sheets: false
+        };
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSystemStatus();
+            loadQuickStats();
+            loadRecentActivity();
+            
+            // Refresh status every 30 seconds
+            setInterval(checkSystemStatus, 30000);
+        });
+
+        // Check system status
+        async function checkSystemStatus() {
+            try {
+                // Check server status
+                const response = await fetch('/api/email/status');
+                if (response.ok) {
+                    systemStatus.server = true;
+                    updateStatusIndicator('serverStatus', 'serverStatusText', true, 'Online');
+                    
+                    const data = await response.json();
+                    
+                    // Check AI providers
+                    const hasAI = data.hasAI;
+                    systemStatus.ai = hasAI;
+                    updateStatusIndicator('aiStatus', 'aiStatusText', hasAI, hasAI ? 'Connected' : 'Not Configured');
+                    
+                    // Check email service
+                    const emailWorking = data.emailConfig && data.emailConfig.success;
+                    systemStatus.email = emailWorking;
+                    updateStatusIndicator('emailStatus', 'emailStatusText', emailWorking, emailWorking ? 'Connected' : 'Not Configured');
+                } else {
+                    updateStatusIndicator('serverStatus', 'serverStatusText', false, 'Offline');
+                }
+
+                // Check Google Sheets
+                const sheetsResponse = await fetch('/api/sheets-status');
+                if (sheetsResponse.ok) {
+                    const sheetsData = await sheetsResponse.json();
+                    const sheetsWorking = sheetsData.googleSheets && sheetsData.googleSheets.configured;
+                    systemStatus.sheets = sheetsWorking;
+                    updateStatusIndicator('sheetsStatus', 'sheetsStatusText', sheetsWorking, sheetsWorking ? 'Connected' : 'Not Configured');
+                }
+            } catch (error) {
+                console.error('Status check failed:', error);
+                updateStatusIndicator('serverStatus', 'serverStatusText', false, 'Error');
+            }
+        }
+
+        function updateStatusIndicator(indicatorId, textId, isOnline, text) {
+            const indicator = document.getElementById(indicatorId);
+            const textElement = document.getElementById(textId);
+            
+            if (indicator && textElement) {
+                indicator.className = `status-indicator ${isOnline ? 'status-online' : 'status-offline'}`;
+                textElement.textContent = text;
+            }
+        }
+
+        // Load quick statistics
+        async function loadQuickStats() {
+            try {
+                const response = await fetch('/api/jobs');
+                if (response.ok) {
+                    const data = await response.json();
+                    const jobs = data.jobs || [];
+                    
+                    document.getElementById('totalJobs').textContent = jobs.length;
+                    
+                    const emailsSent = jobs.filter(job => job.status === 'sent').length;
+                    document.getElementById('emailsSent').textContent = emailsSent;
+                    
+                    const successRate = jobs.length > 0 ? Math.round((emailsSent / jobs.length) * 100) + '%' : '0%';
+                    document.getElementById('successRate').textContent = successRate;
+                }
+
+                // Get templates count
+                const templatesResponse = await fetch('/api/email/templates');
+                if (templatesResponse.ok) {
+                    const templatesData = await templatesResponse.json();
+                    document.getElementById('templatesCount').textContent = templatesData.templates ? templatesData.templates.length : '2';
+                }
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+
+        // Load recent activity
+        function loadRecentActivity() {
+            const activities = [
+                { icon: '🚀', title: 'Dashboard initialized', time: 'Just now' },
+                { icon: '🔧', title: 'Email service enhanced', time: '5 minutes ago' },
+                { icon: '🤖', title: 'AI templates loaded', time: '10 minutes ago' },
+                { icon: '📊', title: 'Database connected', time: '15 minutes ago' }
+            ];
+
+            const activityList = document.getElementById('activityList');
+            activityList.innerHTML = activities.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-icon">${activity.icon}</div>
+                    <div class="activity-content">
+                        <div class="activity-title">${activity.title}</div>
+                        <div class="activity-time">${activity.time}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Feature functions
+        function generateTestEmail() {
+            window.open('/email-templates', '_blank');
+        }
+
+        function viewJobs() {
+            fetch('/api/jobs')
+                .then(response => response.json())
+                .then(data => {
+                    alert(`Total Jobs: ${data.jobs ? data.jobs.length : 0}\n\nClick OK to view details in console.`);
+                    console.table(data.jobs);
+                })
+                .catch(error => {
+                    alert('Failed to load jobs: ' + error.message);
+                });
+        }
+
+        function viewAnalytics() {
+            alert('Analytics dashboard coming soon! 📈\n\nFor now, check the console for job data.');
+            viewJobs();
+        }
+
+        function testSystem() {
+            const loading = document.createElement('div');
+            loading.className = 'loading';
+            loading.style.display = 'inline-block';
+            
+            alert('Running system test...');
+            checkSystemStatus();
+            
+            setTimeout(() => {
+                const status = Object.values(systemStatus).filter(s => s).length;
+                alert(`System Test Results:\n\n✅ ${status}/4 services operational\n\nServer: ${systemStatus.server ? '✅' : '❌'}\nAI: ${systemStatus.ai ? '✅' : '❌'}\nEmail: ${systemStatus.email ? '✅' : '❌'}\nSheets: ${systemStatus.sheets ? '✅' : '❌'}`);
+            }, 2000);
+        }
+
+        function viewEmailQueue() {
+            fetch('/api/jobs')
+                .then(response => response.json())
+                .then(data => {
+                    const jobs = data.jobs || [];
+                    const pending = jobs.filter(job => job.status === 'pending').length;
+                    const sent = jobs.filter(job => job.status === 'sent').length;
+                    const failed = jobs.filter(job => job.status === 'failed').length;
+                    
+                    alert(`Email Queue Status:\n\n📧 Pending: ${pending}\n✅ Sent: ${sent}\n❌ Failed: ${failed}\n\nTotal: ${jobs.length}`);
+                })
+                .catch(error => {
+                    alert('Failed to load email queue: ' + error.message);
+                });
+        }
+
+        function sendTestEmail() {
+            const email = prompt('Enter test email address:');
+            if (email) {
+                fetch('/api/email/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, useAI: false })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ Test email sent successfully!');
+                    } else {
+                        alert('❌ Failed to send test email: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    alert('❌ Error: ' + error.message);
+                });
+            }
+        }
+
+        function openGoogleSheets() {
+            fetch('/api/sheets-status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.googleSheets && data.googleSheets.sheetsId) {
+                        const url = `https://docs.google.com/spreadsheets/d/${data.googleSheets.sheetsId}`;
+                        window.open(url, '_blank');
+                    } else {
+                        alert('Google Sheets not configured. Please check settings.');
+                    }
+                })
+                .catch(error => {
+                    alert('Failed to get sheets info: ' + error.message);
+                });
+        }
+
+        function testSheetsConnection() {
+            fetch('/api/sheets-status')
+                .then(response => response.json())
+                .then(data => {
+                    const status = data.googleSheets;
+                    alert(`Google Sheets Status:\n\n✅ Configured: ${status.configured ? 'Yes' : 'No'}\n📄 Sheet ID: ${status.sheetsId}\n📋 Sheet Name: ${status.sheetName}\n🔑 Credentials: ${status.credentialsExists ? 'Found' : 'Missing'}\n🔧 Mode: ${status.mode}`);
+                })
+                .catch(error => {
+                    alert('Failed to test sheets connection: ' + error.message);
+                });
+        }
+    </script>
+</body>
+</html> 
