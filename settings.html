@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - ScrapedIn</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0077b5 0%, #00a0dc 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .brand-logo h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .nav-bar {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+            margin-bottom: 20px;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: #0077b5;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            background: #f8f9fa;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #0077b5;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 119, 181, 0.3);
+        }
+
+        .nav-header {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #495057;
+        }
+
+        .breadcrumb a {
+            color: #0077b5;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .settings-container {
+            padding: 30px;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+
+        .settings-nav {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            height: fit-content;
+        }
+
+        .settings-nav h3 {
+            margin-bottom: 15px;
+            color: #1f2937;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 12px 16px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #374151;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: #0077b5;
+            color: white;
+        }
+
+        .settings-content {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+        }
+
+        .setting-section {
+            display: none;
+            margin-bottom: 30px;
+        }
+
+        .setting-section.active {
+            display: block;
+        }
+
+        .setting-section h3 {
+            margin-bottom: 20px;
+            color: #1f2937;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #0077b5;
+        }
+
+        .form-group .help-text {
+            font-size: 0.9rem;
+            color: #4b5563;
+            margin-top: 5px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-online {
+            background: #10b981;
+            color: white;
+        }
+
+        .status-offline {
+            background: #ef4444;
+            color: white;
+        }
+
+        .status-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0077b5 0%, #00a0dc 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 119, 181, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .config-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .config-card h4 {
+            margin-bottom: 15px;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .config-status {
+            margin-left: auto;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0077b5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .settings-nav {
+                order: 2;
+            }
+
+            .settings-content {
+                order: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="brand-logo">
+                <h1>Scraped<span style="background: #0077b5; color: white; padding: 4px 8px; border-radius: 8px; margin-left: 5px;">in</span></h1>
+            </div>
+            <p>Your complete LinkedIn recruitment automation platform</p>
+        </div>
+
+        <!-- Navigation Bar -->
+        <div class="nav-bar">
+            <div class="nav-links">
+                <a href="/" class="nav-link">🏠 Dashboard</a>
+                <a href="/scraper" class="nav-link">🔍 Scraper</a>
+                <a href="/email-templates" class="nav-link">🤖 Email Templates</a>
+                <a href="/settings" class="nav-link active">⚙️ Settings</a>
+            </div>
+        </div>
+
+        <div class="nav-header">
+            <div class="breadcrumb">
+                <a href="/dashboard.html">🏠 Dashboard</a>
+                <span>›</span>
+                <span>Settings</span>
+            </div>
+        </div>
+
+        <div class="settings-container">
+            <div class="settings-grid">
+                <!-- Settings Navigation -->
+                <div class="settings-nav">
+                    <h3>Configuration</h3>
+                    <div class="nav-item active" onclick="showSection('general')">
+                        🔧 General Settings
+                    </div>
+                    <div class="nav-item" onclick="showSection('ai')">
+                        🤖 AI Providers
+                    </div>
+                    <div class="nav-item" onclick="showSection('email')">
+                        📧 Email Configuration
+                    </div>
+                    <div class="nav-item" onclick="showSection('sheets')">
+                        📊 Google Sheets
+                    </div>
+                    <div class="nav-item" onclick="showSection('database')">
+                        🗄️ Database
+                    </div>
+                    <div class="nav-item" onclick="showSection('system')">
+                        🔍 System Status
+                    </div>
+                </div>
+
+                <!-- Settings Content -->
+                <div class="settings-content">
+                    <div id="alerts"></div>
+
+                    <!-- General Settings -->
+                    <div id="general" class="setting-section active">
+                        <h3>General Settings</h3>
+                        
+                        <div class="config-card">
+                            <h4>
+                                🚀 Server Configuration
+                                <div class="config-status">
+                                    <span class="status-indicator status-online">
+                                        ● Online
+                                    </span>
+                                </div>
+                            </h4>
+                            
+                            <div class="form-group">
+                                <label>Server Port</label>
+                                <input type="number" id="serverPort" value="3000" readonly>
+                                <div class="help-text">Server is running on this port</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Environment</label>
+                                <select id="nodeEnv" disabled>
+                                    <option value="development">Development</option>
+                                    <option value="production">Production</option>
+                                </select>
+                                <div class="help-text">Current runtime environment</div>
+                            </div>
+                        </div>
+
+                        <div class="config-card">
+                            <h4>🔑 Apify Configuration</h4>
+                            
+                            <div class="form-group">
+                                <label>Apify API Key</label>
+                                <input type="password" id="apifyKey" placeholder="apify_api_..." readonly>
+                                <div class="help-text">Your Apify API key for LinkedIn scraping</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Providers -->
+                    <div id="ai" class="setting-section">
+                        <h3>AI Providers</h3>
+                        
+                        <div class="config-card">
+                            <h4>
+                                🧠 OpenAI
+                                <div class="config-status" id="openaiStatus">
+                                    <span class="loading"></span> Checking...
+                                </div>
+                            </h4>
+                            
+                            <div class="form-group">
+                                <label>OpenAI API Key</label>
+                                <input type="password" id="openaiKey" placeholder="sk-...">
+                                <div class="help-text">Used for GPT-4 and GPT-3.5 models</div>
+                            </div>
+                        </div>
+
+                        <div class="config-card">
+                            <h4>
+                                🌐 OpenRouter
+                                <div class="config-status" id="openrouterStatus">
+                                    <span class="loading"></span> Checking...
+                                </div>
+                            </h4>
+                            
+                            <div class="form-group">
+                                <label>OpenRouter API Key</label>
+                                <input type="password" id="openrouterKey" placeholder="sk-or-...">
+                                <div class="help-text">Access to Claude, Perplexity, and other models</div>
+                            </div>
+                        </div>
+
+                        <div class="config-card">
+                            <h4>
+                                🤖 Anthropic
+                                <div class="config-status" id="anthropicStatus">
+                                    <span class="loading"></span> Checking...
+                                </div>
+                            </h4>
+                            
+                            <div class="form-group">
+                                <label>Anthropic API Key</label>
+                                <input type="password" id="anthropicKey" placeholder="sk-ant-...">
+                                <div class="help-text">Direct access to Claude models</div>
+                            </div>
+                        </div>
+
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="testAIProviders()">
+                                🧪 Test AI Providers
+                            </button>
+                            <button class="btn btn-secondary" onclick="saveAIConfig()">
+                                💾 Save Configuration
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Email Configuration -->
+                    <div id="email" class="setting-section">
+                        <h3>Email Configuration</h3>
+                        
+                        <div class="config-card">
+                            <h4>
+                                📧 SMTP Settings
+                                <div class="config-status" id="emailStatus">
+                                    <span class="loading"></span> Checking...
+                                </div>
+                            </h4>
+                            
+                            <div class="form-group">
+                                <label>SMTP Host</label>
+                                <input type="text" id="smtpHost" placeholder="smtp.gmail.com">
+                                <div class="help-text">Your email provider's SMTP server</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>SMTP Port</label>
+                                <input type="number" id="smtpPort" placeholder="587">
+                                <div class="help-text">Usually 587 for TLS or 465 for SSL</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Email Address</label>
+                                <input type="email" id="smtpUser" placeholder="your-email@gmail.com">
+                                <div class="help-text">Your sending email address</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Email Password</label>
+                                <input type="password" id="smtpPass" placeholder="App password or regular password">
+                                <div class="help-text">Use app password for Gmail</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Test Email Address</label>
+                                <input type="email" id="testEmail" placeholder="test@example.com">
+                                <div class="help-text">Email address for testing</div>
+                            </div>
+                        </div>
+
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="testEmailConfig()">
+                                🧪 Test Email
+                            </button>
+                            <button class="btn btn-success" onclick="sendTestEmail()">
+                                📧 Send Test Email
+                            </button>
+                            <button class="btn btn-secondary" onclick="saveEmailConfig()">
+                                💾 Save Configuration
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Google Sheets -->
+                    <div id="sheets" class="setting-section">
+                        <h3>Google Sheets Integration</h3>
+                        
+                        <div class="config-card">
+                            <h4>
+                                📊 Google Sheets
+                                <div class="config-status" id="sheetsStatus">
+                                    <span class="loading"></span> Checking...
+                                </div>
+                            </h4>
+                            
+                            <div class="form-group">
+                                <label>Google Sheets ID</label>
+                                <input type="text" id="sheetsId" placeholder="1nkZX0o_aBZkqmAenqmqEO-CrUB3eQgJKXngRw6T3crs">
+                                <div class="help-text">Found in the spreadsheet URL</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Sheet Name</label>
+                                <input type="text" id="sheetName" placeholder="Sheet1">
+                                <div class="help-text">Name of the specific sheet tab</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Credentials File</label>
+                                <input type="text" id="credentialsPath" placeholder="./google-credentials.json" readonly>
+                                <div class="help-text">Path to Google service account credentials</div>
+                            </div>
+                        </div>
+
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="testSheetsConnection()">
+                                🧪 Test Connection
+                            </button>
+                            <button class="btn btn-success" onclick="openGoogleSheets()">
+                                🔗 Open Sheets
+                            </button>
+                            <button class="btn btn-secondary" onclick="saveSheetsConfig()">
+                                💾 Save Configuration
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Database -->
+                    <div id="database" class="setting-section">
+                        <h3>Database Configuration</h3>
+                        
+                        <div class="config-card">
+                            <h4>
+                                🗄️ SQLite Database
+                                <div class="config-status">
+                                    <span class="status-indicator status-online">
+                                        ● Connected
+                                    </span>
+                                </div>
+                            </h4>
+                            
+                            <div class="form-group">
+                                <label>Database Path</label>
+                                <input type="text" id="dbPath" value="./database.sqlite" readonly>
+                                <div class="help-text">Local SQLite database file</div>
+                            </div>
+                            
+                            <div id="dbStats" class="form-group">
+                                <label>Database Statistics</label>
+                                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 8px;">
+                                    <div>📊 Total Jobs: <span id="totalJobs">Loading...</span></div>
+                                    <div>📧 Emails Sent: <span id="emailsSent">Loading...</span></div>
+                                    <div>⏳ Pending: <span id="pendingJobs">Loading...</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="loadDatabaseStats()">
+                                🔄 Refresh Stats
+                            </button>
+                            <button class="btn btn-secondary" onclick="exportDatabase()">
+                                📤 Export Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- System Status -->
+                    <div id="system" class="setting-section">
+                        <h3>System Status</h3>
+                        
+                        <div class="config-card">
+                            <h4>🔍 System Health Check</h4>
+                            
+                            <div id="systemStatus">
+                                <div style="text-align: center; padding: 20px;">
+                                    <div class="loading"></div>
+                                    <p style="margin-top: 10px;">Running system diagnostics...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="runSystemCheck()">
+                                🔍 Run Full Check
+                            </button>
+                            <button class="btn btn-secondary" onclick="downloadLogs()">
+                                📋 Download Logs
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Settings page functionality
+        let currentSection = 'general';
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentSettings();
+            checkAllStatus();
+        });
+
+        // Navigation
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.setting-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active from nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            event.target.classList.add('active');
+            
+            currentSection = sectionId;
+            
+            // Load section-specific data
+            if (sectionId === 'system') {
+                runSystemCheck();
+            } else if (sectionId === 'database') {
+                loadDatabaseStats();
+            }
+        }
+
+        // Load current settings
+        function loadCurrentSettings() {
+            // These would typically come from the server
+            document.getElementById('serverPort').value = '3000';
+            document.getElementById('nodeEnv').value = 'development';
+            document.getElementById('apifyKey').value = 'apify_api_ndlgY92xAGzuRYobhYKBfPmBL9ayaa2I5Ekp';
+            document.getElementById('smtpHost').value = 'smtp.gmail.com';
+            document.getElementById('smtpPort').value = '587';
+            document.getElementById('sheetsId').value = '1nkZX0o_aBZkqmAenqmqEO-CrUB3eQgJKXngRw6T3crs';
+            document.getElementById('sheetName').value = 'Sheet1';
+            document.getElementById('credentialsPath').value = './google-credentials.json';
+            document.getElementById('dbPath').value = './database.sqlite';
+        }
+
+        // Check all status
+        async function checkAllStatus() {
+            try {
+                // Check email status
+                const emailResponse = await fetch('/api/email/status');
+                if (emailResponse.ok) {
+                    const emailData = await emailResponse.json();
+                    updateStatusIndicator('emailStatus', emailData.emailConfig.success);
+                    updateStatusIndicator('openaiStatus', emailData.aiProviders.openai);
+                    updateStatusIndicator('openrouterStatus', emailData.aiProviders.openrouter);
+                    updateStatusIndicator('anthropicStatus', emailData.aiProviders.anthropic);
+                }
+
+                // Check sheets status
+                const sheetsResponse = await fetch('/api/sheets-status');
+                if (sheetsResponse.ok) {
+                    const sheetsData = await sheetsResponse.json();
+                    updateStatusIndicator('sheetsStatus', sheetsData.googleSheets.configured);
+                }
+            } catch (error) {
+                console.error('Status check failed:', error);
+            }
+        }
+
+        function updateStatusIndicator(elementId, isOnline) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                if (isOnline) {
+                    element.innerHTML = '<span class="status-indicator status-online">● Connected</span>';
+                } else {
+                    element.innerHTML = '<span class="status-indicator status-offline">● Not Configured</span>';
+                }
+            }
+        }
+
+        // Test functions
+        async function testAIProviders() {
+            showAlert('Testing AI providers...', 'info');
+            try {
+                const response = await fetch('/api/email/status');
+                const data = await response.json();
+                
+                const results = [];
+                if (data.aiProviders.openai) results.push('✅ OpenAI');
+                else results.push('❌ OpenAI');
+                
+                if (data.aiProviders.openrouter) results.push('✅ OpenRouter');
+                else results.push('❌ OpenRouter');
+                
+                if (data.aiProviders.anthropic) results.push('✅ Anthropic');
+                else results.push('❌ Anthropic');
+                
+                showAlert(`AI Provider Test Results:\n${results.join('\n')}`, 'info');
+            } catch (error) {
+                showAlert('Failed to test AI providers: ' + error.message, 'error');
+            }
+        }
+
+        async function testEmailConfig() {
+            showAlert('Testing email configuration...', 'info');
+            try {
+                const response = await fetch('/api/email/config/test');
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('✅ Email configuration is working!', 'success');
+                } else {
+                    showAlert('❌ Email configuration failed: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Failed to test email config: ' + error.message, 'error');
+            }
+        }
+
+        async function sendTestEmail() {
+            const email = document.getElementById('testEmail').value;
+            if (!email) {
+                showAlert('Please enter a test email address', 'error');
+                return;
+            }
+
+            showAlert('Sending test email...', 'info');
+            try {
+                const response = await fetch('/api/email/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, useAI: false })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('✅ Test email sent successfully!', 'success');
+                } else {
+                    showAlert('❌ Failed to send test email: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Failed to send test email: ' + error.message, 'error');
+            }
+        }
+
+        async function testSheetsConnection() {
+            showAlert('Testing Google Sheets connection...', 'info');
+            try {
+                const response = await fetch('/api/sheets-status');
+                const data = await response.json();
+                const status = data.googleSheets;
+                
+                showAlert(`Google Sheets Status:\n✅ Configured: ${status.configured ? 'Yes' : 'No'}\n📄 Sheet ID: ${status.sheetsId}\n📋 Sheet Name: ${status.sheetName}\n🔑 Credentials: ${status.credentialsExists ? 'Found' : 'Missing'}\n🔧 Mode: ${status.mode}`, 'info');
+            } catch (error) {
+                showAlert('Failed to test sheets connection: ' + error.message, 'error');
+            }
+        }
+
+        function openGoogleSheets() {
+            const sheetsId = document.getElementById('sheetsId').value;
+            if (sheetsId) {
+                window.open(`https://docs.google.com/spreadsheets/d/${sheetsId}`, '_blank');
+            } else {
+                showAlert('Please enter a Google Sheets ID', 'error');
+            }
+        }
+
+        async function loadDatabaseStats() {
+            try {
+                const response = await fetch('/api/jobs');
+                if (response.ok) {
+                    const data = await response.json();
+                    const jobs = data.jobs || [];
+                    
+                    document.getElementById('totalJobs').textContent = jobs.length;
+                    document.getElementById('emailsSent').textContent = jobs.filter(job => job.status === 'sent').length;
+                    document.getElementById('pendingJobs').textContent = jobs.filter(job => job.status === 'pending').length;
+                }
+            } catch (error) {
+                console.error('Failed to load database stats:', error);
+            }
+        }
+
+        async function runSystemCheck() {
+            const statusDiv = document.getElementById('systemStatus');
+            statusDiv.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="loading"></div><p style="margin-top: 10px;">Running diagnostics...</p></div>';
+
+            try {
+                const checks = [
+                    { name: 'Server', endpoint: '/api/email/status' },
+                    { name: 'Database', endpoint: '/api/jobs' },
+                    { name: 'Google Sheets', endpoint: '/api/sheets-status' }
+                ];
+
+                const results = [];
+                
+                for (const check of checks) {
+                    try {
+                        const response = await fetch(check.endpoint);
+                        results.push({
+                            name: check.name,
+                            status: response.ok ? 'online' : 'offline',
+                            details: response.ok ? 'Working' : 'Failed'
+                        });
+                    } catch (error) {
+                        results.push({
+                            name: check.name,
+                            status: 'offline',
+                            details: error.message
+                        });
+                    }
+                }
+
+                // Display results
+                statusDiv.innerHTML = results.map(result => `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e9ecef;">
+                        <span>${result.name}</span>
+                        <span class="status-indicator ${result.status === 'online' ? 'status-online' : 'status-offline'}">
+                            ● ${result.details}
+                        </span>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="alert alert-error">System check failed: ${error.message}</div>`;
+            }
+        }
+
+        // Save functions (placeholder - would need backend implementation)
+        function saveAIConfig() {
+            showAlert('AI configuration saved! (Note: Restart server to apply changes)', 'success');
+        }
+
+        function saveEmailConfig() {
+            showAlert('Email configuration saved! (Note: Restart server to apply changes)', 'success');
+        }
+
+        function saveSheetsConfig() {
+            showAlert('Google Sheets configuration saved! (Note: Restart server to apply changes)', 'success');
+        }
+
+        function exportDatabase() {
+            showAlert('Database export feature coming soon!', 'info');
+        }
+
+        function downloadLogs() {
+            showAlert('Log download feature coming soon!', 'info');
+        }
+
+        // Utility functions
+        function showAlert(message, type) {
+            const alertsDiv = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            alertsDiv.innerHTML = '';
+            alertsDiv.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html> 

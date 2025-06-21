@@ -1,0 +1,19 @@
+{
+  "name": "Custom Template",
+  "description": "A customizable template for various outreach scenarios",
+  "systemPrompt": "You are a professional outreach specialist. Write personalized, engaging emails that are tailored to the specific context and recipient. Always maintain a professional yet approachable tone.",
+  "userPromptTemplate": "Write a professional outreach email for:\n\nRecipient: {{posterName}}\nCompany: {{company}}\nPosition: {{title}}\nLocation: {{location}}\nContext: {{context}}\nResearch Information: {{research}}\nIce Breaker: {{iceBreaker}}\n\nCustom Instructions: {{customInstructions}}\n\nFormat the response as: Subject: [subject line] followed by the email body.",
+  "variables": [
+    "posterName",
+    "company", 
+    "title",
+    "location",
+    "context",
+    "research",
+    "iceBreaker",
+    "customInstructions"
+  ],
+  "category": "general",
+  "created": "2024-01-01T00:00:00Z",
+  "lastModified": "2024-01-01T00:00:00Z"
+} 
