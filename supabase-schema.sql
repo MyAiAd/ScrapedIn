@@ -82,13 +82,29 @@ CREATE TRIGGER update_jobs_updated_at
 ALTER TABLE jobs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE email_queue ENABLE ROW LEVEL SECURITY;
 
--- Create policies (adjust as needed for your security requirements)
--- Allow all operations for service role
-CREATE POLICY "Enable all operations for service role" ON jobs
-    FOR ALL USING (true);
+-- Drop existing policies if they exist (to avoid conflicts)
+DROP POLICY IF EXISTS "Enable all operations for service role" ON jobs;
+DROP POLICY IF EXISTS "Enable all operations for service role" ON email_queue;
+DROP POLICY IF EXISTS "jobs_service_role_policy" ON jobs;
+DROP POLICY IF EXISTS "email_queue_service_role_policy" ON email_queue;
 
-CREATE POLICY "Enable all operations for service role" ON email_queue
-    FOR ALL USING (true);
+-- Create policies with unique names for service role access
+CREATE POLICY "jobs_service_role_policy" ON jobs
+    FOR ALL 
+    TO service_role
+    USING (true)
+    WITH CHECK (true);
+
+CREATE POLICY "email_queue_service_role_policy" ON email_queue
+    FOR ALL 
+    TO service_role
+    USING (true)
+    WITH CHECK (true);
+
+-- Grant necessary permissions to service_role
+GRANT ALL ON jobs TO service_role;
+GRANT ALL ON email_queue TO service_role;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO service_role;
 
 -- =============================================
 -- HELPER FUNCTIONS
@@ -107,6 +123,9 @@ BEGIN
     RETURN current_attempts;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Grant execute permission on function to service_role
+GRANT EXECUTE ON FUNCTION increment_attempts(UUID) TO service_role;
 
 -- =============================================
 -- VERIFICATION QUERIES
