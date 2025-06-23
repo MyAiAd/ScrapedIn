@@ -2,27 +2,33 @@
 // Update these values to connect to your n8n workflow
 
 const CONFIG = {
-    // Your n8n webhook URL - Updated with your actual ngrok URL and webhook ID
-    // IMPORTANT: If you're getting "Failed to fetch" errors, check:
-    // 1. Is your ngrok tunnel still running? (ngrok tunnels expire)
-    // 2. Is your n8n workflow activated? (toggle should be ON in n8n interface)
-    // 3. Is the webhook ID correct? (copy it from your webhook node in n8n)
-    // 4. Are the field mappings correct? (see FIELD_MAPPING below)
+    // Development: 'http://localhost:3000'
+    // Production: 'https://scraped-in.vercel.app'
+    API_URL: 'https://scraped-in.vercel.app',
     
-            // Node.js API base URL (replaces n8n webhook)
-    API_URL: 'http://localhost:3000',
+    // Webhook URLs for development/testing 
+    WEBHOOK_URL: '',
     
-    // Legacy n8n URLs (no longer used)
-    // N8N_WEBHOOK_URL: 'https://myva.ngrok.app/webhook/868babb8-5fbf-4ba9-9616-ec5c8b541dd5',
+    // Google Sheets Configuration
+    GOOGLE_SHEET_URL: 'https://docs.google.com/spreadsheets/d/1nkZX0o_aBZkqmAenqmqEO-CrUB3eQgJKXngRw6T3crs/edit',
+    
+    // UI Configuration
+    VERSION: 'v2.8',
+    DEBUG: false,
+    
+    // Feature Flags
+    FEATURES: {
+        AUTO_EMAIL_GENERATION: true,
+        GOOGLE_SHEETS_INTEGRATION: true,
+        EXPORT_CSV: true,
+        REAL_TIME_STATUS: true
+    },
     
     // Authentication for local n8n (set your actual credentials)
     N8N_AUTH: {
         username: 'sage@myai.ad',
         password: 'T3sla12e!'
     },
-    
-    // Your Google Sheets URL for viewing results (updated for v2.4)
-    GOOGLE_SHEET_URL: 'https://docs.google.com/spreadsheets/d/1nkZX0o_aBZkqmAenqmqEO-CrUB3eQgJKXngRw6T3crs/edit',
     
     // Field mapping - DIRECT APIFY INTEGRATION (v2.3)
     // Frontend now sends properly formatted Apify parameters directly

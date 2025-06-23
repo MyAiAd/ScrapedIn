@@ -242,7 +242,7 @@ async function startWorkflow(formData) {
         // Show what data we're sending
         addDebugPanel(formData);
 
-        const baseUrl = window.CONFIG?.API_URL || 'http://localhost:3000';
+        const baseUrl = window.CONFIG?.API_URL || 'https://scraped-in.vercel.app';
         const endpoint = `${baseUrl}/api/scrape-jobs`;
         console.log(`[DEBUG] API Endpoint: ${endpoint}`);
         
@@ -739,7 +739,7 @@ async function testApiConnection() {
         testBtn.disabled = true;
 
         // Test basic API endpoint
-        const apiUrl = window.CONFIG?.API_URL || 'http://localhost:3000';
+        const apiUrl = window.CONFIG?.API_URL || 'https://scraped-in.vercel.app';
         const testUrl = `${apiUrl}/api/sheets-status`;
         console.log(`[DEBUG] Testing: ${testUrl}`);
 
@@ -795,7 +795,7 @@ async function sendCachedResultsToSheets() {
         console.log(`[DEBUG] Sending ${cachedResults.length} cached results to Google Sheets...`);
 
         // Send to Node.js API to save to Google Sheets
-        const baseUrl = window.CONFIG?.API_URL || 'http://localhost:3000';
+        const baseUrl = window.CONFIG?.API_URL || 'https://scraped-in.vercel.app';
         const response = await fetch(`${baseUrl}/api/send-to-sheets`, {
             method: 'POST',
             headers: {
