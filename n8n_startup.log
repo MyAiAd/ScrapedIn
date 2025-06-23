@@ -1,0 +1,38 @@
+Starting ngrok tunnel manually via CLI...
+✅ Ngrok tunnel established and reachable at: https://myva.ngrok.app
+Resetting Telegram webhooks to new ngrok URL...
+Setting up webhook for MyAi bot...
+✅ Telegram webhook for MyAi bot updated successfully to: https://myva.ngrok.app/webhook/36bc2e87-0dde-4b51-b523-21e3a77846cf/webhook
+Setting up webhook for vidSummary bot...
+✅ Telegram webhook for vidSummary bot updated successfully to: https://myva.ngrok.app/webhook-test/e403508a-f7c1-4b4e-a868-3005d6f831a1/webhook
+Setting up webhook for vibeMarketer bot...
+✅ Telegram webhook for vibeMarketer bot updated successfully to: https://myva.ngrok.app/webhook/99eab1a0-569d-4f0f-a49e-578a02abfe63/webhook
+Cleaning up any existing n8n containers...
+n8n_fresh
+n8n_fresh
+Checking n8n version information...
+Saved n8n version: 1.95.3
+You are using the latest n8n version: 1.95.3
+Starting n8n container...
+Starting n8n container with host networking...
+5452d5340b76a3de2823c00fae72895e72806d2ec5a6a891d7cd0a60a96b0cf3
+n8n started successfully using host networking on port 5678
+n8n container is running version: 1.95.3
+n8n container environment variables:
+N8N_PROTOCOL=https
+N8N_WEBHOOK_URL_BASE_URL=https://myva.ngrok.app/
+N8N_WEBHOOK_TEST_URL=https://myva.ngrok.app/
+N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true
+N8N_COMMUNITY_PACKAGES_INCLUDE_SENT_MESSAGE=false
+WEBHOOK_URL=https://myva.ngrok.app
+N8N_LISTEN_ADDRESS=0.0.0.0
+N8N_PORT=5678
+N8N_RELEASE_TYPE=stable
+
+==========================================================
+UPDATING TELEGRAM WEBHOOK WITH NEW NGROK URL
+==========================================================
+Setting new Telegram webhook URL: https://myva.ngrok.app/webhook/36bc2e87-0dde-4b51-b523-21e3a77846cf/webhook
+✅ Telegram webhook updated successfully!
+Your bot will now receive messages through the new ngrok URL.
+==========================================================
