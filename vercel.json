@@ -16,31 +16,31 @@
     },
     {
       "src": "/",
-      "dest": "/public/dashboard.html"
+      "dest": "/dashboard.html"
     },
     {
       "src": "/scraper",
-      "dest": "/public/index.html"
+      "dest": "/index.html"
     },
     {
       "src": "/dashboard",
-      "dest": "/public/dashboard.html"
+      "dest": "/dashboard.html"
     },
     {
       "src": "/email-templates",
-      "dest": "/public/email-templates.html"
+      "dest": "/email-templates.html"
     },
     {
       "src": "/settings", 
-      "dest": "/public/settings.html"
+      "dest": "/settings.html"
     },
     {
       "src": "/(.*\\.(js|css|ico|png|jpg|jpeg|gif|svg))",
-      "dest": "/public/$1"
+      "dest": "/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "/public/dashboard.html"
+      "dest": "/dashboard.html"
     }
   ]
 } 
