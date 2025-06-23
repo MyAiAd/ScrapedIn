@@ -16,6 +16,10 @@
     },
     {
       "src": "/",
+      "dest": "/public/dashboard.html"
+    },
+    {
+      "src": "/scraper",
       "dest": "/public/index.html"
     },
     {
@@ -36,7 +40,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/public/index.html"
+      "dest": "/public/dashboard.html"
     }
   ]
 } 
