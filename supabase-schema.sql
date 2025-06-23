@@ -61,6 +61,9 @@ CREATE INDEX IF NOT EXISTS idx_email_queue_created_at ON email_queue(created_at 
 -- =============================================
 -- TRIGGER FOR UPDATED_AT TIMESTAMP
 -- =============================================
+-- Drop function if it exists to avoid conflicts
+DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE;
+
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -68,6 +71,9 @@ BEGIN
     RETURN NEW;
 END;
 $$ language 'plpgsql';
+
+-- Drop existing trigger if it exists
+DROP TRIGGER IF EXISTS update_jobs_updated_at ON jobs;
 
 -- Create trigger for jobs table
 CREATE TRIGGER update_jobs_updated_at 
@@ -109,6 +115,9 @@ GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO service_role;
 -- =============================================
 -- HELPER FUNCTIONS
 -- =============================================
+-- Drop function if it exists to avoid conflicts
+DROP FUNCTION IF EXISTS increment_attempts(UUID) CASCADE;
+
 -- Function to increment email attempts
 CREATE OR REPLACE FUNCTION increment_attempts(email_id UUID)
 RETURNS INTEGER AS $$
