@@ -1,4 +1,4 @@
-const databaseService = require('./services/databaseService');
+const { createClient } = require('@supabase/supabase-js');
 
 module.exports = async (req, res) => {
     // Set CORS headers
@@ -11,13 +11,31 @@ module.exports = async (req, res) => {
     }
 
     try {
+        const supabase = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
+
         if (req.method === 'GET') {
             // Get all jobs
-            const jobs = await databaseService.getAllJobs();
+            const { data, error } = await supabase
+                .from('jobs')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('❌ Error fetching jobs:', error);
+                return res.status(500).json({
+                    success: false,
+                    error: 'Failed to fetch jobs',
+                    message: error.message
+                });
+            }
+
             return res.status(200).json({
                 success: true,
-                jobs: jobs,
-                count: jobs.length
+                jobs: data || [],
+                count: data?.length || 0
             });
         }
 
@@ -31,7 +49,29 @@ module.exports = async (req, res) => {
                 });
             }
 
-            await databaseService.updateJobStatus(id, status);
+            const updateData = {
+                status: status,
+                updated_at: new Date().toISOString()
+            };
+
+            if (status === 'sent') {
+                updateData.email_sent_at = new Date().toISOString();
+            }
+
+            const { error } = await supabase
+                .from('jobs')
+                .update(updateData)
+                .eq('id', id);
+
+            if (error) {
+                console.error('❌ Error updating job status:', error);
+                return res.status(500).json({
+                    success: false,
+                    error: 'Failed to update job status',
+                    message: error.message
+                });
+            }
+
             return res.status(200).json({
                 success: true,
                 message: `Job ${id} status updated to ${status}`
