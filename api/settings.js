@@ -1,6 +1,5 @@
 // In serverless environments, we can't write to the file system
 // So we'll use environment variables as the source of truth
-// Updated to fix deployment issues
 const DEFAULT_SETTINGS = {
     apifyKey: process.env.APIFY_API_KEY || '',
     openaiKey: process.env.OPENAI_API_KEY || '',
