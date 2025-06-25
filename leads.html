@@ -483,6 +483,16 @@
 
         // Load leads when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Leads page loaded, attempting to load leads...');
+            
+            // Show the filters section immediately
+            const filtersSection = document.querySelector('.filters-section');
+            if (filtersSection) {
+                filtersSection.style.display = 'block';
+                console.log('✅ Filters section made visible');
+            }
+            
+            // Try to load leads
             loadLeads();
         });
 
@@ -536,7 +546,24 @@
                 }
             } catch (error) {
                 console.error('❌ Error loading leads:', error);
-                showError('Failed to load leads: ' + error.message);
+                
+                // Show detailed error information
+                const errorMessage = `Failed to load leads: ${error.message}\n\nThis appears to be an API routing issue on Vercel.\nPlease check the browser console for detailed error information.\n\nTrying to access: ${window.location.origin}/api/leads`;
+                showError(errorMessage);
+                
+                // Also show a no-data message with helpful info
+                const noDataMessage = document.getElementById('noDataMessage');
+                const tableContainer = document.getElementById('leadsTableContainer');
+                if (noDataMessage && tableContainer) {
+                    tableContainer.style.display = 'none';
+                    noDataMessage.style.display = 'block';
+                    noDataMessage.innerHTML = `
+                        <h3>🔧 API Connection Issue</h3>
+                        <p>Unable to connect to the leads API endpoint.</p>
+                        <p>Error: ${error.message}</p>
+                        <p>The Test API button below can help diagnose the issue.</p>
+                    `;
+                }
             } finally {
                 showLoading(false);
             }
