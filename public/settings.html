@@ -858,7 +858,7 @@
         // Load API keys from server
         async function loadApiKeys() {
             try {
-                const response = await fetch('/api/settings');
+                const response = await fetch('/api/ping?action=settings');
                 if (response.ok) {
                     const data = await response.json();
                     
@@ -1109,7 +1109,7 @@
             showAlert('💾 Saving general configuration...', 'info');
 
             try {
-                const response = await fetch('/api/settings', {
+                const response = await fetch('/api/ping?action=settings', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ apifyKey })
@@ -1152,7 +1152,7 @@
             showAlert('💾 Saving AI configuration...', 'info');
 
             try {
-                const response = await fetch('/api/settings', {
+                const response = await fetch('/api/ping?action=settings', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(config)
