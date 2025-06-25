@@ -4,10 +4,10 @@ const bodyParser = require('body-parser');
 const path = require('path');
 require('dotenv').config({ path: './config.env' });
 
-const apifyService = require('../services/apifyService');
-const emailService = require('../services/emailService');
-const sheetsService = require('../services/sheetsService');
-const databaseService = require('../services/databaseService');
+const apifyService = require('./services/apifyService');
+const emailService = require('./services/emailService');
+const sheetsService = require('./services/sheetsService');
+const databaseService = require('./services/databaseService');
 
 const app = express();
 

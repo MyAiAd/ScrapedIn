@@ -1,6 +1,6 @@
-const apifyService = require('../services/apifyService');
-const databaseService = require('../services/databaseService');
-const sheetsService = require('../services/sheetsService');
+const apifyService = require('./services/apifyService');
+const databaseService = require('./services/databaseService');
+const sheetsService = require('./services/sheetsService');
 
 module.exports = async (req, res) => {
     // Set CORS headers

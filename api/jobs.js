@@ -1,4 +1,4 @@
-const databaseService = require('../services/databaseService');
+const databaseService = require('./services/databaseService');
 
 module.exports = async (req, res) => {
     // Set CORS headers

@@ -1,24 +1,27 @@
-# Ignore all JS files except those in api/ directory
+# Ignore all JS files except specific API endpoints and public assets
 *.js
-!api/**/*.js
 
-# Ignore specific directories
-.yoyo/
-services/
-node_modules/
-.git/
-
-# Ignore test and utility files
-test-*.js
-*test*.js
-debug*.js
-export*.js
-import*.js
-extract*.js
-server.js
-config.js
-script.js
+# Allow only API endpoints (not services)
+!api/ping.js
+!api/test-connection.js
+!api/scrape-jobs.js
+!api/test-leads.js
+!api/jobs.js
+!api/[...path].js
+!api/debug-rls.js
+!api/sheets-status.js
+!api/leads.js
+!api/app.js
+!api/email/status.js
+!api/email/templates.js
 
 # Allow specific public assets
 !public/config.js
-!public/script.js 
+!public/script.js
+
+# Ignore directories
+.yoyo/
+scripts/
+node_modules/
+.git/
+api/services/ 
