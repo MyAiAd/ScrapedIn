@@ -7,7 +7,6 @@
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "build": "mkdir -p public && cp *.html public/ 2>/dev/null || true && cp *.js public/ 2>/dev/null || true && cp -r services public/ 2>/dev/null || true && echo 'Build completed successfully'",
     "test": "echo 'No tests specified'"
   },
   "dependencies": {

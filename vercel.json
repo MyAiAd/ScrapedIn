@@ -5,39 +5,5 @@
       "src": "api/*.js",
       "use": "@vercel/node"
     }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/leads",
-      "dest": "/leads.html"
-    },
-    {
-      "src": "/dashboard",
-      "dest": "/dashboard.html"
-    },
-    {
-      "src": "/scraper",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/email-templates",
-      "dest": "/email-templates.html"
-    },
-    {
-      "src": "/settings",
-      "dest": "/settings.html"
-    },
-    {
-      "src": "/",
-      "dest": "/dashboard.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
   ]
 } 
