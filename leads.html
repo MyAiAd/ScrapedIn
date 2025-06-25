@@ -436,6 +436,7 @@
                 <div style="margin-top: 15px; display: flex; gap: 10px;">
                     <button class="btn btn-primary" onclick="applyFilters()">🔍 Apply Filters</button>
                     <button class="btn btn-secondary" onclick="clearFilters()">🗑️ Clear Filters</button>
+                    <button class="btn" style="background: #28a745; color: white;" onclick="testApiConnection()">🧪 Test API</button>
                 </div>
             </div>
 
@@ -498,18 +499,43 @@
                     ...currentFilters
                 });
 
+                console.log('🔍 Fetching leads from API:', `/api/leads?${params}`);
+                
                 const response = await fetch(`/api/leads?${params}`);
-                const result = await response.json();
+                console.log('📡 Response status:', response.status);
+                console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+                
+                // Check if response is ok
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Response not OK:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                // Try to parse JSON
+                const responseText = await response.text();
+                console.log('📄 Raw response:', responseText.substring(0, 200) + '...');
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('❌ JSON Parse Error:', parseError);
+                    console.error('❌ Response text:', responseText);
+                    throw new Error(`Failed to parse JSON response: ${parseError.message}. Response: ${responseText.substring(0, 100)}...`);
+                }
 
                 if (result.success) {
+                    console.log('✅ Successfully loaded leads:', result);
                     displayLeads(result.leads);
                     updatePagination(result.pagination);
                     updateStats(result.stats);
                 } else {
+                    console.error('❌ API returned error:', result);
                     throw new Error(result.message || 'Failed to load leads');
                 }
             } catch (error) {
-                console.error('Error loading leads:', error);
+                console.error('❌ Error loading leads:', error);
                 showError('Failed to load leads: ' + error.message);
             } finally {
                 showLoading(false);
@@ -682,6 +708,27 @@
             if (!text) return '';
             if (text.length <= maxLength) return text;
             return text.substring(0, maxLength) + '...';
+        }
+
+        // Test API connection
+        async function testApiConnection() {
+            try {
+                console.log('🧪 Testing API connection...');
+                
+                const response = await fetch('/api/test-leads');
+                console.log('📡 Test response status:', response.status);
+                
+                const responseText = await response.text();
+                console.log('📄 Test response:', responseText);
+                
+                const result = JSON.parse(responseText);
+                
+                alert(`API Test Result:\n\nStatus: ${response.status}\nSuccess: ${result.success}\nMessage: ${result.message}\n\nEnvironment:\n- Has Supabase URL: ${result.environment?.hasSupabaseUrl}\n- Has Supabase Key: ${result.environment?.hasSupabaseKey}\n- Node Version: ${result.environment?.nodeVersion}`);
+                
+            } catch (error) {
+                console.error('❌ API Test Error:', error);
+                alert(`API Test Failed:\n${error.message}`);
+            }
         }
 
         // Add keyboard navigation for filters

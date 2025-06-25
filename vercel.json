@@ -2,17 +2,22 @@
   "version": 2,
   "builds": [
     {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "public"
-      }
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
+      "src": "/api/leads",
+      "dest": "/api/leads.js"
+    },
+    {
+      "src": "/api/scrape-jobs",
+      "dest": "/api/scrape-jobs.js"
+    },
+    {
       "src": "/api/(.*)",
-      "dest": "/api/[...path]"
+      "dest": "/api/$1.js"
     },
     {
       "src": "/",
