@@ -950,13 +950,13 @@
         async function testEmailConfig() {
             showAlert('Testing email configuration...', 'info');
             try {
-                const response = await fetch('/api/email/config/test');
+                const response = await fetch('/api/email/status');
                 const data = await response.json();
                 
-                if (data.success) {
-                    showAlert('✅ Email configuration is working!', 'success');
+                if (data.success && data.configured) {
+                    showAlert(`✅ Email configuration is working! Provider: ${data.provider}`, 'success');
                 } else {
-                    showAlert('❌ Email configuration failed: ' + data.error, 'error');
+                    showAlert('❌ Email configuration failed: Not configured properly', 'error');
                 }
             } catch (error) {
                 showAlert('Failed to test email config: ' + error.message, 'error');
