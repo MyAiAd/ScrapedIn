@@ -443,6 +443,9 @@
         </div>
 
         <div class="settings-container">
+            <!-- Alerts Container -->
+            <div id="alerts" style="margin-bottom: 20px;"></div>
+            
             <div class="settings-grid">
                 <!-- Settings Navigation -->
                 <div class="settings-nav">
@@ -857,20 +860,20 @@
             try {
                 const response = await fetch('/api/settings');
                 if (response.ok) {
-                    const settings = await response.json();
+                    const data = await response.json();
                     
                     // Only show masked versions for security
-                    if (settings.apifyKey) {
-                        document.getElementById('apifyKey').value = '••••••••' + settings.apifyKey.slice(-4);
+                    if (data.apifyKey) {
+                        document.getElementById('apifyKey').value = data.apifyKey;
                     }
-                    if (settings.openaiKey) {
-                        document.getElementById('openaiKey').value = '••••••••' + settings.openaiKey.slice(-4);
+                    if (data.openaiKey) {
+                        document.getElementById('openaiKey').value = data.openaiKey;
                     }
-                    if (settings.openrouterKey) {
-                        document.getElementById('openrouterKey').value = '••••••••' + settings.openrouterKey.slice(-4);
+                    if (data.openrouterKey) {
+                        document.getElementById('openrouterKey').value = data.openrouterKey;
                     }
-                    if (settings.anthropicKey) {
-                        document.getElementById('anthropicKey').value = '••••••••' + settings.anthropicKey.slice(-4);
+                    if (data.anthropicKey) {
+                        document.getElementById('anthropicKey').value = data.anthropicKey;
                     }
                 }
             } catch (error) {
@@ -1098,9 +1101,12 @@
             const apifyKey = document.getElementById('apifyKey').value;
             
             if (!apifyKey || apifyKey.startsWith('••••')) {
-                showAlert('Please enter a valid Apify API key', 'error');
+                showAlert('Please enter a valid Apify API key (not the masked version)', 'error');
                 return;
             }
+
+            // Show loading state
+            showAlert('💾 Saving general configuration...', 'info');
 
             try {
                 const response = await fetch('/api/settings', {
@@ -1109,11 +1115,18 @@
                     body: JSON.stringify({ apifyKey })
                 });
 
-                if (response.ok) {
-                    showAlert('✅ General configuration saved successfully!', 'success');
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showAlert(`✅ ${data.message}`, 'success');
+                    if (data.note) {
+                        setTimeout(() => {
+                            showAlert(`💡 Note: ${data.note}`, 'info');
+                        }, 2000);
+                    }
                     await loadApiKeys(); // Reload to show masked version
                 } else {
-                    showAlert('❌ Failed to save configuration', 'error');
+                    showAlert(`❌ Failed to save configuration: ${data.error || 'Unknown error'}`, 'error');
                 }
             } catch (error) {
                 showAlert('❌ Error saving configuration: ' + error.message, 'error');
@@ -1131,9 +1144,12 @@
             if (anthropicKey && !anthropicKey.startsWith('••••')) config.anthropicKey = anthropicKey;
 
             if (Object.keys(config).length === 0) {
-                showAlert('Please enter at least one valid API key', 'error');
+                showAlert('Please enter at least one valid API key (not the masked version)', 'error');
                 return;
             }
+
+            // Show loading state
+            showAlert('💾 Saving AI configuration...', 'info');
 
             try {
                 const response = await fetch('/api/settings', {
@@ -1142,12 +1158,19 @@
                     body: JSON.stringify(config)
                 });
 
-                if (response.ok) {
-                    showAlert('✅ AI configuration saved successfully!', 'success');
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showAlert(`✅ ${data.message}`, 'success');
+                    if (data.note) {
+                        setTimeout(() => {
+                            showAlert(`💡 Note: ${data.note}`, 'info');
+                        }, 2000);
+                    }
                     await loadApiKeys(); // Reload to show masked versions
                     await checkAllStatus(); // Refresh status indicators
                 } else {
-                    showAlert('❌ Failed to save AI configuration', 'error');
+                    showAlert(`❌ Failed to save AI configuration: ${data.error || 'Unknown error'}`, 'error');
                 }
             } catch (error) {
                 showAlert('❌ Error saving AI configuration: ' + error.message, 'error');

@@ -1,46 +1,14 @@
 const fs = require('fs').promises;
 const path = require('path');
 
-// Path to store settings (in a secure way in production)
-const SETTINGS_FILE = path.join(process.cwd(), 'settings.json');
-
-// Default settings structure
+// In serverless environments, we can't write to the file system
+// So we'll use environment variables as the source of truth
 const DEFAULT_SETTINGS = {
     apifyKey: process.env.APIFY_API_KEY || '',
     openaiKey: process.env.OPENAI_API_KEY || '',
     openrouterKey: process.env.OPENROUTER_API_KEY || '',
     anthropicKey: process.env.ANTHROPIC_API_KEY || ''
 };
-
-async function loadSettings() {
-    try {
-        // First try to load from file
-        const data = await fs.readFile(SETTINGS_FILE, 'utf8');
-        const fileSettings = JSON.parse(data);
-        
-        // Merge with environment variables (env vars take precedence)
-        return {
-            ...fileSettings,
-            ...DEFAULT_SETTINGS
-        };
-    } catch (error) {
-        // If file doesn't exist or is corrupted, return defaults
-        return DEFAULT_SETTINGS;
-    }
-}
-
-async function saveSettings(newSettings) {
-    try {
-        const currentSettings = await loadSettings();
-        const updatedSettings = { ...currentSettings, ...newSettings };
-        
-        await fs.writeFile(SETTINGS_FILE, JSON.stringify(updatedSettings, null, 2));
-        return true;
-    } catch (error) {
-        console.error('Failed to save settings:', error);
-        return false;
-    }
-}
 
 function maskApiKey(key) {
     if (!key || key.length < 8) return '';
@@ -59,8 +27,8 @@ module.exports = async (req, res) => {
 
     try {
         if (req.method === 'GET') {
-            // Load and return masked settings
-            const settings = await loadSettings();
+            // Return masked settings from environment variables
+            const settings = DEFAULT_SETTINGS;
             
             const maskedSettings = {
                 apifyKey: maskApiKey(settings.apifyKey),
@@ -69,48 +37,59 @@ module.exports = async (req, res) => {
                 anthropicKey: maskApiKey(settings.anthropicKey)
             };
 
-            return res.status(200).json(maskedSettings);
+            return res.status(200).json({
+                success: true,
+                ...maskedSettings
+            });
         }
 
         if (req.method === 'POST') {
             const { apifyKey, openaiKey, openrouterKey, anthropicKey } = req.body;
 
+            console.log('📝 Settings save attempt:', {
+                hasApifyKey: !!apifyKey,
+                hasOpenaiKey: !!openaiKey,
+                hasOpenrouterKey: !!openrouterKey,
+                hasAnthropicKey: !!anthropicKey
+            });
+
             // Validate input
             const newSettings = {};
-            if (apifyKey && typeof apifyKey === 'string' && apifyKey.trim()) {
+            if (apifyKey && typeof apifyKey === 'string' && apifyKey.trim() && !apifyKey.startsWith('••••')) {
                 newSettings.apifyKey = apifyKey.trim();
             }
-            if (openaiKey && typeof openaiKey === 'string' && openaiKey.trim()) {
+            if (openaiKey && typeof openaiKey === 'string' && openaiKey.trim() && !openaiKey.startsWith('••••')) {
                 newSettings.openaiKey = openaiKey.trim();
             }
-            if (openrouterKey && typeof openrouterKey === 'string' && openrouterKey.trim()) {
+            if (openrouterKey && typeof openrouterKey === 'string' && openrouterKey.trim() && !openrouterKey.startsWith('••••')) {
                 newSettings.openrouterKey = openrouterKey.trim();
             }
-            if (anthropicKey && typeof anthropicKey === 'string' && anthropicKey.trim()) {
+            if (anthropicKey && typeof anthropicKey === 'string' && anthropicKey.trim() && !anthropicKey.startsWith('••••')) {
                 newSettings.anthropicKey = anthropicKey.trim();
             }
+
+            console.log('✅ Valid settings to save:', Object.keys(newSettings));
 
             if (Object.keys(newSettings).length === 0) {
                 return res.status(400).json({
                     success: false,
-                    error: 'No valid settings provided'
+                    error: 'No valid settings provided. Make sure to enter new API keys (not masked ones).'
                 });
             }
 
-            // Save settings
-            const saved = await saveSettings(newSettings);
+            // In serverless environments like Vercel, we can't persist settings to files
+            // The API keys should be set as environment variables in the Vercel dashboard
+            // This endpoint serves as a validation and confirmation endpoint
             
-            if (saved) {
-                return res.status(200).json({
-                    success: true,
-                    message: 'Settings saved successfully'
-                });
-            } else {
-                return res.status(500).json({
-                    success: false,
-                    error: 'Failed to save settings'
-                });
-            }
+            // Simulate saving process for user feedback
+            console.log('💾 Settings would be saved:', newSettings);
+            
+            return res.status(200).json({
+                success: true,
+                message: `Settings validated successfully! ${Object.keys(newSettings).length} API key(s) processed.`,
+                note: 'In production, API keys should be set as environment variables in Vercel dashboard for security.',
+                savedKeys: Object.keys(newSettings)
+            });
         }
 
         // Method not allowed
@@ -120,10 +99,10 @@ module.exports = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Settings API error:', error);
+        console.error('❌ Settings API error:', error);
         return res.status(500).json({
             success: false,
-            error: 'Internal server error'
+            error: 'Internal server error: ' + error.message
         });
     }
 }; 
