@@ -2,6 +2,7 @@
   "name": "linkedin-scraper-app",
   "version": "1.0.0",
   "description": "LinkedIn job scraper with AI email generation",
+  "type": "module",
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",

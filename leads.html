@@ -712,22 +712,42 @@
 
         // Test API connection
         async function testApiConnection() {
+            console.log('🧪 Testing API connections...');
+            
+            // Test 1: Basic ping
             try {
-                console.log('🧪 Testing API connection...');
+                console.log('🟡 Testing basic ping...');
+                const pingResponse = await fetch('/api/ping');
+                const pingText = await pingResponse.text();
+                console.log('📄 Ping response:', pingText);
                 
-                const response = await fetch('/api/test-leads');
-                console.log('📡 Test response status:', response.status);
-                
-                const responseText = await response.text();
-                console.log('📄 Test response:', responseText);
-                
-                const result = JSON.parse(responseText);
-                
-                alert(`API Test Result:\n\nStatus: ${response.status}\nSuccess: ${result.success}\nMessage: ${result.message}\n\nEnvironment:\n- Has Supabase URL: ${result.environment?.hasSupabaseUrl}\n- Has Supabase Key: ${result.environment?.hasSupabaseKey}\n- Node Version: ${result.environment?.nodeVersion}`);
+                if (pingResponse.ok) {
+                    console.log('✅ Basic ping successful');
+                    const pingResult = JSON.parse(pingText);
+                    
+                    // Test 2: Advanced test-leads
+                    try {
+                        console.log('🟡 Testing test-leads endpoint...');
+                        const testResponse = await fetch('/api/test-leads');
+                        const testText = await testResponse.text();
+                        console.log('📄 Test-leads response:', testText);
+                        
+                        if (testResponse.ok) {
+                            const testResult = JSON.parse(testText);
+                            alert(`✅ API Tests Successful!\n\nPing: ${pingResult.message}\nTest: ${testResult.message}\n\nEnvironment:\n- Has Supabase URL: ${testResult.environment?.hasSupabaseUrl}\n- Has Supabase Key: ${testResult.environment?.hasSupabaseKey}\n- Node Version: ${testResult.environment?.nodeVersion}`);
+                        } else {
+                            alert(`❌ Test-leads failed but ping worked:\n\nPing: ✅ ${pingResult.message}\nTest-leads: ❌ ${testResponse.status} - ${testText}`);
+                        }
+                    } catch (testError) {
+                        alert(`❌ Test-leads error but ping worked:\n\nPing: ✅ ${pingResult.message}\nTest-leads error: ${testError.message}`);
+                    }
+                } else {
+                    alert(`❌ Basic ping failed:\nStatus: ${pingResponse.status}\nResponse: ${pingText}`);
+                }
                 
             } catch (error) {
                 console.error('❌ API Test Error:', error);
-                alert(`API Test Failed:\n${error.message}`);
+                alert(`❌ Complete API Test Failed:\n${error.message}`);
             }
         }
 

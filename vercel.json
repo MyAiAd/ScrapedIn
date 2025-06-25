@@ -1,12 +1,15 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs18.x"
     }
-  ],
+  },
   "routes": [
+    {
+      "src": "/api/test-leads",
+      "dest": "/api/test-leads.js"
+    },
     {
       "src": "/api/leads",
       "dest": "/api/leads.js"
@@ -44,7 +47,7 @@
       "dest": "/settings.html"
     },
     {
-      "src": "/(.*\\.(js|css|ico|png|jpg|jpeg|gif|svg))",
+      "src": "/(.*\\.(js|css|ico|png|jpg|jpeg|gif|svg|html))",
       "dest": "/$1"
     },
     {
