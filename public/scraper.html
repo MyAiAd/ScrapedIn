@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Job Scraper - ScrapedIn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .logo .highlight {
+            color: #0077b5;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #0077b5, #00a0dc);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        /* Navigation */
+        .nav {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid transparent;
+            border-radius: 25px;
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link:hover {
+            background: #0077b5;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 119, 181, 0.3);
+        }
+
+        .nav-link.active {
+            background: #0077b5;
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title h2 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .page-title p {
+            font-size: 18px;
+            color: #7f8c8d;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Scraper Form */
+        .scraper-form {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 15px 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            background: white;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #0077b5;
+            box-shadow: 0 0 0 3px rgba(0, 119, 181, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #95a5a6;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 180px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0077b5, #00a0dc);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 119, 181, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Results Section */
+        .results-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+            display: none;
+        }
+
+        .results-section.show {
+            display: block;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .results-header h3 {
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .results-stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0077b5;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-container.show {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0077b5, #00a0dc);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            margin-top: 10px;
+            text-align: center;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        /* Status Messages */
+        .status-message {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: 500;
+            display: none;
+        }
+
+        .status-message.show {
+            display: block;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        /* Job Results */
+        .job-results {
+            display: grid;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .job-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .job-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .job-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .job-company {
+            color: #0077b5;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .job-location {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .job-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-processed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .main-content {
+                padding: 25px;
+            }
+
+            .page-title h2 {
+                font-size: 28px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .results-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .results-stats {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">S</div>
+                    <h1><span class="highlight">Scraped</span>In</h1>
+                </div>
+                <nav class="nav">
+                    <a href="/dashboard" class="nav-link">🏠 Dashboard</a>
+                    <a href="/scraper" class="nav-link active">🔍 Scraper</a>
+                    <a href="/leads" class="nav-link">📊 Leads Database</a>
+                    <a href="/email-templates" class="nav-link">✉️ Email Templates</a>
+                    <a href="/settings" class="nav-link">⚙️ Settings</a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="page-title">
+                <h2>🔍 LinkedIn Job Scraper</h2>
+                <p>Search and extract LinkedIn job postings with advanced filters. Get detailed job information, company data, and contact details automatically.</p>
+            </div>
+
+            <!-- Scraper Form -->
+            <form class="scraper-form" id="scraperForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="jobTitle">Job Title</label>
+                        <input type="text" id="jobTitle" name="jobTitle" placeholder="e.g., Software Engineer, Marketing Manager" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="jobLocation">Job Location</label>
+                        <input type="text" id="jobLocation" name="jobLocation" placeholder="e.g., London, United Kingdom" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="companyName">Company Name (Optional)</label>
+                        <input type="text" id="companyName" name="companyName" placeholder="e.g., Google, Microsoft">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="jobType">Job Type</label>
+                        <select id="jobType" name="jobType">
+                            <option value="">Any</option>
+                            <option value="Full-time">Full-time</option>
+                            <option value="Part-time">Part-time</option>
+                            <option value="Contract">Contract</option>
+                            <option value="Temporary">Temporary</option>
+                            <option value="Internship">Internship</option>
+                            <option value="Volunteer">Volunteer</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="experienceLevel">Experience Level</label>
+                        <select id="experienceLevel" name="experienceLevel">
+                            <option value="">Any</option>
+                            <option value="Internship">Internship</option>
+                            <option value="Entry level">Entry level</option>
+                            <option value="Associate">Associate</option>
+                            <option value="Mid-Senior level">Mid-Senior level</option>
+                            <option value="Director">Director</option>
+                            <option value="Executive">Executive</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="workMode">Work Mode</label>
+                        <select id="workMode" name="workMode">
+                            <option value="">Any</option>
+                            <option value="On-site">On-site</option>
+                            <option value="Remote">Remote</option>
+                            <option value="Hybrid">Hybrid</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="publishedAt">Published At</label>
+                        <select id="publishedAt" name="publishedAt">
+                            <option value="Past 24 hours">Past 24 hours</option>
+                            <option value="Past Week" selected>Past Week</option>
+                            <option value="Past Month">Past Month</option>
+                            <option value="Any time">Any time</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="totalJobs">Total Jobs to Scrape</label>
+                        <select id="totalJobs" name="totalJobs">
+                            <option value="5">5 jobs</option>
+                            <option value="10" selected>10 jobs</option>
+                            <option value="25">25 jobs</option>
+                            <option value="50">50 jobs</option>
+                            <option value="100">100 jobs</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-primary" id="startScraping">
+                        🚀 Start Scraping
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="clearForm()">
+                        🔄 Clear Form
+                    </button>
+                </div>
+            </form>
+
+            <!-- Progress Bar -->
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">Initializing scraper...</div>
+            </div>
+
+            <!-- Status Messages -->
+            <div class="status-message" id="statusMessage"></div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection">
+                <div class="results-header">
+                    <h3>📋 Scraping Results</h3>
+                    <div class="results-stats">
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalFound">0</div>
+                            <div class="stat-label">Total Found</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalProcessed">0</div>
+                            <div class="stat-label">Processed</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalSaved">0</div>
+                            <div class="stat-label">Saved</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="job-results" id="jobResults"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Scraper functionality
+        let isScrapingInProgress = false;
+
+        document.getElementById('scraperForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (isScrapingInProgress) {
+                return;
+            }
+
+            await startScraping();
+        });
+
+        async function startScraping() {
+            isScrapingInProgress = true;
+            
+            // Get form data
+            const formData = getFormData();
+            
+            // Show progress and hide previous results
+            showProgress();
+            hideStatus();
+            hideResults();
+            
+            // Disable form
+            toggleFormDisabled(true);
+            
+            try {
+                updateProgress(10, 'Preparing scraper...');
+                
+                // Send request to scrape API
+                const response = await fetch('/api/scrape-jobs', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                updateProgress(30, 'Connecting to LinkedIn...');
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateProgress(100, 'Scraping completed successfully!');
+                    
+                    setTimeout(() => {
+                        hideProgress();
+                        showSuccess(`Successfully scraped ${result.jobs?.length || 0} jobs!`);
+                        displayResults(result);
+                    }, 1000);
+                } else {
+                    throw new Error(result.error || 'Scraping failed');
+                }
+                
+            } catch (error) {
+                console.error('Scraping error:', error);
+                hideProgress();
+                showError(`Scraping failed: ${error.message}`);
+            } finally {
+                isScrapingInProgress = false;
+                toggleFormDisabled(false);
+            }
+        }
+
+        function getFormData() {
+            return {
+                'Job Title': document.getElementById('jobTitle').value,
+                'Job Location': document.getElementById('jobLocation').value,
+                'Company Name': document.getElementById('companyName').value,
+                'Job Type': document.getElementById('jobType').value,
+                'Experience Level': document.getElementById('experienceLevel').value,
+                'On-site/Remote/Hybrid': document.getElementById('workMode').value,
+                'Published at': document.getElementById('publishedAt').value,
+                'Total Jobs to Scrape': parseInt(document.getElementById('totalJobs').value)
+            };
+        }
+
+        function showProgress() {
+            document.getElementById('progressContainer').classList.add('show');
+        }
+
+        function hideProgress() {
+            document.getElementById('progressContainer').classList.remove('show');
+        }
+
+        function updateProgress(percentage, text) {
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressText').textContent = text;
+        }
+
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.className = `status-message show status-${type}`;
+            statusEl.textContent = message;
+        }
+
+        function showSuccess(message) {
+            showStatus(message, 'success');
+        }
+
+        function showError(message) {
+            showStatus(message, 'error');
+        }
+
+        function showInfo(message) {
+            showStatus(message, 'info');
+        }
+
+        function hideStatus() {
+            document.getElementById('statusMessage').classList.remove('show');
+        }
+
+        function showResults() {
+            document.getElementById('resultsSection').classList.add('show');
+        }
+
+        function hideResults() {
+            document.getElementById('resultsSection').classList.remove('show');
+        }
+
+        function displayResults(result) {
+            // Update stats
+            document.getElementById('totalFound').textContent = result.totalFound || 0;
+            document.getElementById('totalProcessed').textContent = result.jobs?.length || 0;
+            document.getElementById('totalSaved').textContent = result.jobs?.length || 0;
+
+            // Display job cards
+            const jobResultsEl = document.getElementById('jobResults');
+            jobResultsEl.innerHTML = '';
+
+            if (result.jobs && result.jobs.length > 0) {
+                result.jobs.forEach(job => {
+                    const jobCard = createJobCard(job);
+                    jobResultsEl.appendChild(jobCard);
+                });
+            } else {
+                jobResultsEl.innerHTML = '<p style="text-align: center; color: #7f8c8d; padding: 40px;">No jobs found matching your criteria.</p>';
+            }
+
+            showResults();
+        }
+
+        function createJobCard(job) {
+            const card = document.createElement('div');
+            card.className = 'job-card';
+            
+            card.innerHTML = `
+                <div class="job-header">
+                    <div>
+                        <div class="job-title">${job.title || 'Unknown Title'}</div>
+                        <div class="job-company">${job.company || 'Unknown Company'}</div>
+                        <div class="job-location">${job.location || 'Unknown Location'}</div>
+                    </div>
+                    <div class="job-status status-pending">Pending</div>
+                </div>
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e9ecef; display: flex; gap: 10px; flex-wrap: wrap;">
+                    ${job.jobUrl ? `<a href="${job.jobUrl}" target="_blank" style="color: #0077b5; text-decoration: none; font-size: 14px;">🔗 View Job</a>` : ''}
+                    ${job.posterProfileUrl ? `<a href="${job.posterProfileUrl}" target="_blank" style="color: #0077b5; text-decoration: none; font-size: 14px;">👤 View Poster</a>` : ''}
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function toggleFormDisabled(disabled) {
+            const form = document.getElementById('scraperForm');
+            const inputs = form.querySelectorAll('input, select, button');
+            inputs.forEach(input => {
+                input.disabled = disabled;
+            });
+        }
+
+        function clearForm() {
+            document.getElementById('scraperForm').reset();
+            hideStatus();
+            hideResults();
+            hideProgress();
+        }
+
+        // Initialize form
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default values
+            document.getElementById('publishedAt').value = 'Past Week';
+            document.getElementById('totalJobs').value = '10';
+        });
+    </script>
+</body>
+</html> 
