@@ -1,0 +1,24 @@
+# Ignore all JS files except those in api/ directory
+*.js
+!api/**/*.js
+
+# Ignore specific directories
+.yoyo/
+services/
+node_modules/
+.git/
+
+# Ignore test and utility files
+test-*.js
+*test*.js
+debug*.js
+export*.js
+import*.js
+extract*.js
+server.js
+config.js
+script.js
+
+# Allow specific public assets
+!public/config.js
+!public/script.js 
