@@ -2,10 +2,21 @@ const { createClient } = require('@supabase/supabase-js');
 
 class DatabaseService {
     constructor() {
-        this.supabase = createClient(
-            process.env.SUPABASE_URL,
-            process.env.SUPABASE_SERVICE_ROLE_KEY
-        );
+        try {
+            if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+                throw new Error('Supabase environment variables not configured');
+            }
+            
+            this.supabase = createClient(
+                process.env.SUPABASE_URL,
+                process.env.SUPABASE_SERVICE_ROLE_KEY
+            );
+            
+            console.log('✅ Supabase client initialized');
+        } catch (error) {
+            console.error('❌ Error initializing Supabase client:', error);
+            throw error;
+        }
     }
 
     // Save a job to Supabase
