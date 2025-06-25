@@ -348,6 +348,42 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Email Provider Tabs */
+        .provider-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #6c757d;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: #0077b5;
+            border-bottom-color: #0077b5;
+        }
+
+        .tab-btn:hover {
+            color: #0077b5;
+            background: #f8f9fa;
+        }
+
+        .provider-config {
+            display: none;
+        }
+
+        .provider-config.active {
+            display: block;
+        }
+
         @media (max-width: 768px) {
             .settings-grid {
                 grid-template-columns: 1fr;
@@ -359,6 +395,21 @@
 
             .settings-content {
                 order: 1;
+            }
+
+            .provider-tabs {
+                flex-direction: column;
+            }
+
+            .tab-btn {
+                text-align: left;
+                border-bottom: 1px solid #e9ecef;
+                border-left: 3px solid transparent;
+            }
+
+            .tab-btn.active {
+                border-left-color: #0077b5;
+                border-bottom-color: #e9ecef;
             }
         }
     </style>
@@ -532,34 +583,72 @@
                         
                         <div class="config-card">
                             <h4>
-                                📧 SMTP Settings
+                                📧 Email Service
                                 <div class="config-status" id="emailStatus">
                                     <span class="loading"></span> Checking...
                                 </div>
                             </h4>
                             
-                            <div class="form-group">
-                                <label>SMTP Host</label>
-                                <input type="text" id="smtpHost" placeholder="smtp.gmail.com">
-                                <div class="help-text">Your email provider's SMTP server</div>
+                            <div class="provider-tabs">
+                                <button class="tab-btn active" onclick="switchEmailProvider('ses')">AWS SES</button>
+                                <button class="tab-btn" onclick="switchEmailProvider('smtp')">SMTP</button>
                             </div>
                             
-                            <div class="form-group">
-                                <label>SMTP Port</label>
-                                <input type="number" id="smtpPort" placeholder="587">
-                                <div class="help-text">Usually 587 for TLS or 465 for SSL</div>
+                            <div id="ses-config" class="provider-config active">
+                                <div class="form-group">
+                                    <label>AWS Access Key ID</label>
+                                    <input type="text" id="awsAccessKey" placeholder="AKIA...">
+                                    <div class="help-text">Your AWS Access Key ID for SES</div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>AWS Secret Access Key</label>
+                                    <input type="password" id="awsSecretKey" placeholder="••••••••••••••••">
+                                    <div class="help-text">Your AWS Secret Access Key</div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>AWS Region</label>
+                                    <select id="awsRegion">
+                                        <option value="us-east-1">US East (N. Virginia)</option>
+                                        <option value="us-west-2">US West (Oregon)</option>
+                                        <option value="eu-west-1">Europe (Ireland)</option>
+                                        <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                                    </select>
+                                    <div class="help-text">AWS region where your SES service is configured</div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>From Email Address</label>
+                                    <input type="email" id="sesFromEmail" placeholder="noreply@yourdomain.com">
+                                    <div class="help-text">Verified email address in SES</div>
+                                </div>
                             </div>
                             
-                            <div class="form-group">
-                                <label>Email Address</label>
-                                <input type="email" id="smtpUser" placeholder="your-email@gmail.com">
-                                <div class="help-text">Your sending email address</div>
-                            </div>
+                            <div id="smtp-config" class="provider-config">
+                                <div class="form-group">
+                                    <label>SMTP Host</label>
+                                    <input type="text" id="smtpHost" placeholder="smtp.gmail.com">
+                                    <div class="help-text">Your email provider's SMTP server</div>
+                                </div>
                             
-                            <div class="form-group">
-                                <label>Email Password</label>
-                                <input type="password" id="smtpPass" placeholder="App password or regular password">
-                                <div class="help-text">Use app password for Gmail</div>
+                                <div class="form-group">
+                                    <label>SMTP Port</label>
+                                    <input type="number" id="smtpPort" placeholder="587">
+                                    <div class="help-text">Usually 587 for TLS or 465 for SSL</div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Email Address</label>
+                                    <input type="email" id="smtpUser" placeholder="your-email@gmail.com">
+                                    <div class="help-text">Your sending email address</div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Email Password</label>
+                                    <input type="password" id="smtpPass" placeholder="App password or regular password">
+                                    <div class="help-text">Use app password for Gmail</div>
+                                </div>
                             </div>
                             
                             <div class="form-group">
@@ -871,6 +960,17 @@
             }
         }
 
+        // Email provider switching
+        function switchEmailProvider(provider) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update config panels
+            document.querySelectorAll('.provider-config').forEach(panel => panel.classList.remove('active'));
+            document.getElementById(provider + '-config').classList.add('active');
+        }
+
         async function sendTestEmail() {
             const email = document.getElementById('testEmail').value;
             if (!email) {
@@ -880,21 +980,25 @@
 
             showAlert('Sending test email...', 'info');
             try {
-                const response = await fetch('/api/email/test', {
+                const response = await fetch('/api/email/send', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, useAI: false })
+                    body: JSON.stringify({ 
+                        to: email, 
+                        isTest: true,
+                        useAI: false 
+                    })
                 });
                 
                 const data = await response.json();
                 
                 if (data.success) {
-                    showAlert('✅ Test email sent successfully!', 'success');
+                    showAlert(`✅ Test email sent successfully via ${data.provider}!`, 'success');
                 } else {
-                    showAlert('❌ Failed to send test email: ' + data.error, 'error');
+                    showAlert(`❌ Failed to send test email via ${data.provider}: ${data.error}`, 'error');
                 }
             } catch (error) {
-                showAlert('Failed to send test email: ' + error.message, 'error');
+                showAlert('❌ Error sending test email: ' + error.message, 'error');
             }
         }
 
