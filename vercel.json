@@ -12,32 +12,52 @@
       "dest": "/api/$1"
     },
     {
-      "src": "/",
-      "dest": "/dashboard.html"
-    },
-    {
-      "src": "/scraper",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/dashboard",
-      "dest": "/dashboard.html"
-    },
-    {
-      "src": "/email-templates",
-      "dest": "/email-templates.html"
-    },
-    {
-      "src": "/leads",
+      "src": "/leads.html",
       "dest": "/leads.html"
     },
     {
-      "src": "/settings", 
+      "src": "/leads/?",
+      "dest": "/leads.html"
+    },
+    {
+      "src": "/dashboard.html",
+      "dest": "/dashboard.html"
+    },
+    {
+      "src": "/dashboard/?",
+      "dest": "/dashboard.html"
+    },
+    {
+      "src": "/index.html",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/scraper/?",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/email-templates.html",
+      "dest": "/email-templates.html"
+    },
+    {
+      "src": "/email-templates/?",
+      "dest": "/email-templates.html"
+    },
+    {
+      "src": "/settings.html",
+      "dest": "/settings.html"
+    },
+    {
+      "src": "/settings/?", 
       "dest": "/settings.html"
     },
     {
       "src": "/(.*\\.(js|css|ico|png|jpg|jpeg|gif|svg|html))",
       "dest": "/$1"
+    },
+    {
+      "src": "/",
+      "dest": "/dashboard.html"
     },
     {
       "src": "/(.*)",
