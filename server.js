@@ -57,6 +57,15 @@ app.get('/email-templates', (req, res) => {
     res.sendFile(path.join(__dirname, 'email-templates.html'));
 });
 
+// Leads Database Page
+app.get('/leads', (req, res) => {
+    res.sendFile(path.join(__dirname, 'leads.html'));
+});
+
+app.get('/leads.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'leads.html'));
+});
+
 // Test Frontend
 app.get('/test-frontend', (req, res) => {
     res.sendFile(path.join(__dirname, 'test-frontend.html'));

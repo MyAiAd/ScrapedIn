@@ -277,6 +277,98 @@ class DatabaseService {
     close() {
         console.log('✅ Supabase client - no connection to close');
     }
+
+    // Get jobs with pagination
+    async getJobsWithPagination(page = 1, limit = 20, filters = {}) {
+        try {
+            const offset = (page - 1) * limit;
+            
+            // Build query
+            let query = this.supabase
+                .from('jobs')
+                .select('*', { count: 'exact' });
+
+            // Apply filters
+            if (filters.status) {
+                query = query.eq('status', filters.status);
+            }
+            if (filters.company) {
+                query = query.ilike('company', `%${filters.company}%`);
+            }
+            if (filters.title) {
+                query = query.ilike('title', `%${filters.title}%`);
+            }
+            if (filters.location) {
+                query = query.ilike('location', `%${filters.location}%`);
+            }
+            if (filters.dateFrom) {
+                query = query.gte('created_at', filters.dateFrom);
+            }
+            if (filters.dateTo) {
+                query = query.lte('created_at', filters.dateTo);
+            }
+
+            // Apply pagination and ordering
+            const { data, error, count } = await query
+                .order('created_at', { ascending: false })
+                .range(offset, offset + limit - 1);
+
+            if (error) {
+                console.error('❌ Error fetching jobs with pagination:', error);
+                throw error;
+            }
+
+            const totalPages = Math.ceil(count / limit);
+
+            return {
+                data: data || [],
+                pagination: {
+                    currentPage: page,
+                    totalPages,
+                    totalItems: count,
+                    itemsPerPage: limit,
+                    hasNext: page < totalPages,
+                    hasPrev: page > 1
+                }
+            };
+        } catch (error) {
+            console.error('❌ Error in getJobsWithPagination:', error);
+            throw error;
+        }
+    }
+
+    // Get job statistics
+    async getJobStats() {
+        try {
+            const { data: totalCount, error: totalError } = await this.supabase
+                .from('jobs')
+                .select('*', { count: 'exact', head: true });
+
+            const { data: pendingCount, error: pendingError } = await this.supabase
+                .from('jobs')
+                .select('*', { count: 'exact', head: true })
+                .eq('status', 'pending');
+
+            const { data: sentCount, error: sentError } = await this.supabase
+                .from('jobs')
+                .select('*', { count: 'exact', head: true })
+                .eq('status', 'sent');
+
+            if (totalError || pendingError || sentError) {
+                throw totalError || pendingError || sentError;
+            }
+
+            return {
+                total: totalCount || 0,
+                pending: pendingCount || 0,
+                sent: sentCount || 0,
+                processed: (sentCount || 0)
+            };
+        } catch (error) {
+            console.error('❌ Error in getJobStats:', error);
+            throw error;
+        }
+    }
 }
 
 module.exports = new DatabaseService(); 

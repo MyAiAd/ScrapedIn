@@ -31,6 +31,10 @@
       "dest": "/email-templates.html"
     },
     {
+      "src": "/leads",
+      "dest": "/leads.html"
+    },
+    {
       "src": "/settings", 
       "dest": "/settings.html"
     },
