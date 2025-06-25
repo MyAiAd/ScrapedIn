@@ -426,7 +426,7 @@
                         
                         <div class="config-card">
                             <h4>
-                                🚀 Server Configuration
+                                🚀 Application Status
                                 <div class="config-status">
                                     <span class="status-indicator status-online">
                                         ● Online
@@ -435,9 +435,9 @@
                             </h4>
                             
                             <div class="form-group">
-                                <label>Server Port</label>
-                                <input type="number" id="serverPort" value="3000" readonly>
-                                <div class="help-text">Server is running on this port</div>
+                                <label>Deployment Platform</label>
+                                <input type="text" id="platform" value="Vercel" readonly>
+                                <div class="help-text">Application is deployed on Vercel</div>
                             </div>
                             
                             <div class="form-group">
@@ -455,9 +455,15 @@
                             
                             <div class="form-group">
                                 <label>Apify API Key</label>
-                                <input type="password" id="apifyKey" placeholder="apify_api_..." readonly>
+                                <input type="password" id="apifyKey" placeholder="apify_api_...">
                                 <div class="help-text">Your Apify API key for LinkedIn scraping</div>
                             </div>
+                        </div>
+
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="saveGeneralConfig()">
+                                💾 Save Configuration
+                            </button>
                         </div>
                     </div>
 
@@ -626,18 +632,22 @@
                         
                         <div class="config-card">
                             <h4>
-                                🗄️ SQLite Database
-                                <div class="config-status">
-                                    <span class="status-indicator status-online">
-                                        ● Connected
-                                    </span>
+                                🗄️ Supabase Database
+                                <div class="config-status" id="supabaseStatus">
+                                    <span class="loading"></span> Checking...
                                 </div>
                             </h4>
                             
                             <div class="form-group">
-                                <label>Database Path</label>
-                                <input type="text" id="dbPath" value="./database.sqlite" readonly>
-                                <div class="help-text">Local SQLite database file</div>
+                                <label>Database URL</label>
+                                <input type="text" id="supabaseUrl" placeholder="https://your-project.supabase.co" readonly>
+                                <div class="help-text">Your Supabase project URL</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Connection Status</label>
+                                <input type="text" id="connectionStatus" value="Connected" readonly>
+                                <div class="help-text">Current database connection status</div>
                             </div>
                             
                             <div id="dbStats" class="form-group">
@@ -646,6 +656,8 @@
                                     <div>📊 Total Jobs: <span id="totalJobs">Loading...</span></div>
                                     <div>📧 Emails Sent: <span id="emailsSent">Loading...</span></div>
                                     <div>⏳ Pending: <span id="pendingJobs">Loading...</span></div>
+                                    <div>✅ Contacted: <span id="contactedJobs">Loading...</span></div>
+                                    <div>💬 Responded: <span id="respondedJobs">Loading...</span></div>
                                 </div>
                             </div>
                         </div>
@@ -653,6 +665,9 @@
                         <div class="btn-group">
                             <button class="btn btn-primary" onclick="loadDatabaseStats()">
                                 🔄 Refresh Stats
+                            </button>
+                            <button class="btn btn-success" onclick="openSupabaseDashboard()">
+                                🔗 Open Supabase Dashboard
                             </button>
                             <button class="btn btn-secondary" onclick="exportDatabase()">
                                 📤 Export Data
@@ -726,17 +741,52 @@
         }
 
         // Load current settings
-        function loadCurrentSettings() {
-            // These would typically come from the server
-            document.getElementById('serverPort').value = '3000';
-            document.getElementById('nodeEnv').value = 'development';
-            document.getElementById('apifyKey').value = 'apify_api_ndlgY92xAGzuRYobhYKBfPmBL9ayaa2I5Ekp';
-            document.getElementById('smtpHost').value = 'smtp.gmail.com';
-            document.getElementById('smtpPort').value = '587';
-            document.getElementById('sheetsId').value = '1nkZX0o_aBZkqmAenqmqEO-CrUB3eQgJKXngRw6T3crs';
-            document.getElementById('sheetName').value = 'Sheet1';
-            document.getElementById('credentialsPath').value = './google-credentials.json';
-            document.getElementById('dbPath').value = './database.sqlite';
+        async function loadCurrentSettings() {
+            try {
+                // Load environment settings
+                document.getElementById('platform').value = 'Vercel';
+                document.getElementById('nodeEnv').value = 'production';
+                
+                // Load API keys from environment or saved settings
+                await loadApiKeys();
+                
+                // Load other configurations
+                document.getElementById('smtpHost').value = 'smtp.gmail.com';
+                document.getElementById('smtpPort').value = '587';
+                document.getElementById('sheetsId').value = '1nkZX0o_aBZkqmAenqmqEO-CrUB3eQgJKXngRw6T3crs';
+                document.getElementById('sheetName').value = 'Sheet1';
+                document.getElementById('credentialsPath').value = './google-credentials.json';
+                document.getElementById('supabaseUrl').value = 'https://jaymichuelonrcrzwjlt.supabase.co';
+                document.getElementById('connectionStatus').value = 'Connected';
+            } catch (error) {
+                console.error('Failed to load settings:', error);
+            }
+        }
+
+        // Load API keys from server
+        async function loadApiKeys() {
+            try {
+                const response = await fetch('/api/settings');
+                if (response.ok) {
+                    const settings = await response.json();
+                    
+                    // Only show masked versions for security
+                    if (settings.apifyKey) {
+                        document.getElementById('apifyKey').value = '••••••••' + settings.apifyKey.slice(-4);
+                    }
+                    if (settings.openaiKey) {
+                        document.getElementById('openaiKey').value = '••••••••' + settings.openaiKey.slice(-4);
+                    }
+                    if (settings.openrouterKey) {
+                        document.getElementById('openrouterKey').value = '••••••••' + settings.openrouterKey.slice(-4);
+                    }
+                    if (settings.anthropicKey) {
+                        document.getElementById('anthropicKey').value = '••••••••' + settings.anthropicKey.slice(-4);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load API keys:', error);
+            }
         }
 
         // Check all status
@@ -757,6 +807,14 @@
                 if (sheetsResponse.ok) {
                     const sheetsData = await sheetsResponse.json();
                     updateStatusIndicator('sheetsStatus', sheetsData.googleSheets.configured);
+                }
+
+                // Check Supabase status
+                const supabaseResponse = await fetch('/api/jobs');
+                if (supabaseResponse.ok) {
+                    updateStatusIndicator('supabaseStatus', true);
+                } else {
+                    updateStatusIndicator('supabaseStatus', false);
                 }
             } catch (error) {
                 console.error('Status check failed:', error);
@@ -864,7 +922,7 @@
 
         async function loadDatabaseStats() {
             try {
-                const response = await fetch('/api/jobs');
+                const response = await fetch('/api/leads?page=1&limit=1000');
                 if (response.ok) {
                     const data = await response.json();
                     const jobs = data.jobs || [];
@@ -872,9 +930,17 @@
                     document.getElementById('totalJobs').textContent = jobs.length;
                     document.getElementById('emailsSent').textContent = jobs.filter(job => job.status === 'sent').length;
                     document.getElementById('pendingJobs').textContent = jobs.filter(job => job.status === 'pending').length;
+                    document.getElementById('contactedJobs').textContent = jobs.filter(job => job.status === 'contacted').length;
+                    document.getElementById('respondedJobs').textContent = jobs.filter(job => job.status === 'responded').length;
                 }
             } catch (error) {
                 console.error('Failed to load database stats:', error);
+                // Set error state
+                document.getElementById('totalJobs').textContent = 'Error';
+                document.getElementById('emailsSent').textContent = 'Error';
+                document.getElementById('pendingJobs').textContent = 'Error';
+                document.getElementById('contactedJobs').textContent = 'Error';
+                document.getElementById('respondedJobs').textContent = 'Error';
             }
         }
 
@@ -923,9 +989,65 @@
             }
         }
 
-        // Save functions (placeholder - would need backend implementation)
-        function saveAIConfig() {
-            showAlert('AI configuration saved! (Note: Restart server to apply changes)', 'success');
+        // Save functions
+        async function saveGeneralConfig() {
+            const apifyKey = document.getElementById('apifyKey').value;
+            
+            if (!apifyKey || apifyKey.startsWith('••••')) {
+                showAlert('Please enter a valid Apify API key', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ apifyKey })
+                });
+
+                if (response.ok) {
+                    showAlert('✅ General configuration saved successfully!', 'success');
+                    await loadApiKeys(); // Reload to show masked version
+                } else {
+                    showAlert('❌ Failed to save configuration', 'error');
+                }
+            } catch (error) {
+                showAlert('❌ Error saving configuration: ' + error.message, 'error');
+            }
+        }
+
+        async function saveAIConfig() {
+            const openaiKey = document.getElementById('openaiKey').value;
+            const openrouterKey = document.getElementById('openrouterKey').value;
+            const anthropicKey = document.getElementById('anthropicKey').value;
+
+            const config = {};
+            if (openaiKey && !openaiKey.startsWith('••••')) config.openaiKey = openaiKey;
+            if (openrouterKey && !openrouterKey.startsWith('••••')) config.openrouterKey = openrouterKey;
+            if (anthropicKey && !anthropicKey.startsWith('••••')) config.anthropicKey = anthropicKey;
+
+            if (Object.keys(config).length === 0) {
+                showAlert('Please enter at least one valid API key', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+
+                if (response.ok) {
+                    showAlert('✅ AI configuration saved successfully!', 'success');
+                    await loadApiKeys(); // Reload to show masked versions
+                    await checkAllStatus(); // Refresh status indicators
+                } else {
+                    showAlert('❌ Failed to save AI configuration', 'error');
+                }
+            } catch (error) {
+                showAlert('❌ Error saving AI configuration: ' + error.message, 'error');
+            }
         }
 
         function saveEmailConfig() {
@@ -934,6 +1056,10 @@
 
         function saveSheetsConfig() {
             showAlert('Google Sheets configuration saved! (Note: Restart server to apply changes)', 'success');
+        }
+
+        function openSupabaseDashboard() {
+            window.open('https://supabase.com/dashboard/project/jaymichuelonrcrzwjlt', '_blank');
         }
 
         function exportDatabase() {
