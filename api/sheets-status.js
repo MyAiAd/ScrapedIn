@@ -1,3 +1,4 @@
+require('dotenv').config({ path: './config.env' });
 const sheetsService = require('./services/sheetsService');
 
 module.exports = async (req, res) => {

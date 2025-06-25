@@ -1,3 +1,4 @@
+require('dotenv').config({ path: './config.env' });
 const databaseService = require('./services/databaseService');
 
 module.exports = async (req, res) => {

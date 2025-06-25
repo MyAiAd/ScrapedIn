@@ -644,6 +644,64 @@ Best regards,
             throw error;
         }
     }
+
+    // Check if email service is properly configured
+    isConfigured() {
+        return !!(process.env.SMTP_USER && process.env.SMTP_PASS);
+    }
+
+    // Get last email sent time (placeholder - would need database integration)
+    async getLastEmailTime() {
+        // For now, return null - would need to track this in database
+        return null;
+    }
+
+    // Get emails sent today count (placeholder - would need database integration)
+    async getEmailsSentToday() {
+        // For now, return 0 - would need to track this in database
+        return 0;
+    }
+
+    // Create email template
+    async createTemplate(name, subject, content, type = 'custom') {
+        const id = Date.now().toString();
+        const template = {
+            id,
+            name,
+            subject,
+            content,
+            type,
+            created: new Date().toISOString()
+        };
+        
+        this.templates.set(id, template);
+        return id;
+    }
+
+    // Update email template
+    async updateTemplate(id, name, subject, content, type) {
+        if (!this.templates.has(id)) {
+            throw new Error(`Template with ID ${id} not found`);
+        }
+        
+        const template = this.templates.get(id);
+        if (name) template.name = name;
+        if (subject) template.subject = subject;
+        if (content) template.content = content;
+        if (type) template.type = type;
+        template.updated = new Date().toISOString();
+        
+        this.templates.set(id, template);
+    }
+
+    // Delete email template
+    async deleteTemplate(id) {
+        if (!this.templates.has(id)) {
+            throw new Error(`Template with ID ${id} not found`);
+        }
+        
+        this.templates.delete(id);
+    }
 }
 
 module.exports = new EmailService(); 
