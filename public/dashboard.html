@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ScrapedIn - LinkedIn Recruitment Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,7 +15,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #f8f9fa;
             min-height: 100vh;
             padding: 20px;
@@ -35,11 +38,14 @@
         }
 
         .brand-logo h1 {
+            font-family: 'Inter', sans-serif;
             font-size: 2.5rem;
+            font-weight: 700;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: #000000;
         }
 
         .header h1 {
@@ -379,7 +385,7 @@
         <!-- Header -->
         <div class="header">
             <div class="brand-logo">
-                <h1>Scraped<span style="background: #0077b5; color: white; padding: 4px 8px; border-radius: 8px; margin-left: 5px;">in</span></h1>
+                <h1><span style="color: #000000;">Scraped</span><span style="background: #0077b5; color: white; padding: 4px 8px; border-radius: 8px; margin-left: 5px; font-weight: 600;">in</span></h1>
             </div>
             <p>Your complete LinkedIn recruitment automation platform</p>
         </div>
@@ -389,6 +395,7 @@
             <div class="nav-links">
                 <a href="/dashboard" class="nav-link active">🏠 Dashboard</a>
                 <a href="/scraper" class="nav-link">🔍 Scraper</a>
+                <a href="/leads" class="nav-link">📊 Leads Database</a>
                 <a href="/email-templates" class="nav-link">🤖 Email Templates</a>
                 <a href="/settings" class="nav-link">⚙️ Settings</a>
             </div>
@@ -458,14 +465,14 @@
                 </div>
             </div>
 
-            <!-- Database & Analytics -->
+            <!-- Leads Database -->
             <div class="card">
                 <div class="card-icon">📊</div>
-                <h3>Data & Analytics</h3>
-                <p>View scraped jobs, email queue status, and performance analytics. Track your recruitment pipeline.</p>
+                <h3>Leads Database</h3>
+                <p>View and manage your scraped leads from LinkedIn with powerful filtering and pagination. Track lead status and performance.</p>
                 <div class="card-actions">
-                    <a href="#" onclick="viewJobs()" class="btn btn-primary">
-                        📋 View Jobs
+                    <a href="/leads" class="btn btn-primary">
+                        📋 View Leads
                     </a>
                     <a href="#" onclick="viewAnalytics()" class="btn btn-secondary">
                         📈 Analytics
