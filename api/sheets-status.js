@@ -1,4 +1,4 @@
-const sheetsService = require('./services/sheetsService');
+// Note: sheetsService not needed for basic status check
 
 module.exports = async (req, res) => {
     // Set CORS headers

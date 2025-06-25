@@ -1,5 +1,3 @@
-const emailService = require('../services/emailService');
-
 module.exports = async (req, res) => {
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,8 +10,19 @@ module.exports = async (req, res) => {
 
     try {
         if (req.method === 'GET') {
-            // Get all email templates
-            const templates = await emailService.getTemplates();
+            // Get all email templates (simplified)
+            const templates = [
+                {
+                    key: 'job_outreach',
+                    name: 'Job Outreach',
+                    description: 'Professional cold outreach for job opportunities'
+                },
+                {
+                    key: 'reputation_management',
+                    name: 'Reputation Management',
+                    description: 'Cold outreach for reputation management services'
+                }
+            ];
             return res.status(200).json({
                 success: true,
                 templates: templates,
@@ -22,54 +31,26 @@ module.exports = async (req, res) => {
         }
 
         if (req.method === 'POST') {
-            // Create new template
-            const { name, subject, content, type } = req.body;
-            if (!name || !subject || !content) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Name, subject, and content are required'
-                });
-            }
-
-            const templateId = await emailService.createTemplate(name, subject, content, type);
-            return res.status(201).json({
-                success: true,
-                message: 'Template created successfully',
-                templateId: templateId
+            // Create new template (simplified)
+            return res.status(501).json({
+                success: false,
+                error: 'Template creation not implemented yet'
             });
         }
 
         if (req.method === 'PUT') {
-            // Update template
-            const { id, name, subject, content, type } = req.body;
-            if (!id) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Template ID is required'
-                });
-            }
-
-            await emailService.updateTemplate(id, name, subject, content, type);
-            return res.status(200).json({
-                success: true,
-                message: 'Template updated successfully'
+            // Update template (simplified)
+            return res.status(501).json({
+                success: false,
+                error: 'Template updating not implemented yet'
             });
         }
 
         if (req.method === 'DELETE') {
-            // Delete template
-            const { id } = req.body;
-            if (!id) {
-                return res.status(400).json({
-                    success: false,
-                    error: 'Template ID is required'
-                });
-            }
-
-            await emailService.deleteTemplate(id);
-            return res.status(200).json({
-                success: true,
-                message: 'Template deleted successfully'
+            // Delete template (simplified)
+            return res.status(501).json({
+                success: false,
+                error: 'Template deletion not implemented yet'
             });
         }
 

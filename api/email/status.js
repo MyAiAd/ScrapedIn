@@ -1,5 +1,3 @@
-const emailService = require('../services/emailService');
-
 module.exports = async (req, res) => {
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,9 +14,9 @@ module.exports = async (req, res) => {
 
     try {
         // Check email service configuration
-        const isConfigured = emailService.isConfigured();
-        const lastEmailSent = await emailService.getLastEmailTime();
-        const emailsSentToday = await emailService.getEmailsSentToday();
+        const isConfigured = !!(process.env.SMTP_USER && process.env.SMTP_PASS);
+        const lastEmailSent = null; // Would need database integration
+        const emailsSentToday = 0; // Would need database integration
 
         return res.status(200).json({
             success: true,
