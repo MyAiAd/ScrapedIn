@@ -1,6 +1,3 @@
-const fs = require('fs').promises;
-const path = require('path');
-
 // In serverless environments, we can't write to the file system
 // So we'll use environment variables as the source of truth
 const DEFAULT_SETTINGS = {
@@ -15,7 +12,7 @@ function maskApiKey(key) {
     return '••••••••' + key.slice(-4);
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -105,4 +102,4 @@ module.exports = async (req, res) => {
             error: 'Internal server error: ' + error.message
         });
     }
-}; 
+} 

@@ -220,7 +220,7 @@ If you received this email, your email configuration is working correctly!
     return await sendEmail(to, subject, htmlBody, textBody);
 }
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -284,8 +284,7 @@ module.exports = async (req, res) => {
             message: error.message
         });
     }
-};
+}
 
 // Export functions for use in other modules
-module.exports.sendEmail = sendEmail;
-module.exports.sendTestEmail = sendTestEmail; 
+export { sendEmail, sendTestEmail }; 
