@@ -38,6 +38,10 @@
     {
       "src": "/",
       "dest": "/dashboard.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/dashboard.html"
     }
   ]
 } 
