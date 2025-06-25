@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/leads", "destination": "/leads.html" },
+    { "source": "/settings", "destination": "/settings.html" },
+    { "source": "/email-templates", "destination": "/email-templates.html" }
+  ]
+} 
