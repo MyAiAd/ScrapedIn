@@ -12,43 +12,23 @@
       "dest": "/api/$1"
     },
     {
-      "src": "/leads.html",
+      "src": "/leads",
       "dest": "/leads.html"
     },
     {
-      "src": "/leads/?",
-      "dest": "/leads.html"
-    },
-    {
-      "src": "/dashboard.html",
+      "src": "/dashboard",
       "dest": "/dashboard.html"
     },
     {
-      "src": "/dashboard/?",
-      "dest": "/dashboard.html"
-    },
-    {
-      "src": "/index.html",
+      "src": "/scraper",
       "dest": "/index.html"
     },
     {
-      "src": "/scraper/?",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/email-templates.html",
+      "src": "/email-templates",
       "dest": "/email-templates.html"
     },
     {
-      "src": "/email-templates/?",
-      "dest": "/email-templates.html"
-    },
-    {
-      "src": "/settings.html",
-      "dest": "/settings.html"
-    },
-    {
-      "src": "/settings/?", 
+      "src": "/settings",
       "dest": "/settings.html"
     },
     {
@@ -57,10 +37,6 @@
     },
     {
       "src": "/",
-      "dest": "/dashboard.html"
-    },
-    {
-      "src": "/(.*)",
       "dest": "/dashboard.html"
     }
   ]
