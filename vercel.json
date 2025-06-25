@@ -32,16 +32,12 @@
       "dest": "/settings.html"
     },
     {
-      "src": "/(.*\\.(js|css|ico|png|jpg|jpeg|gif|svg|html))",
-      "dest": "/$1"
-    },
-    {
       "src": "/",
       "dest": "/dashboard.html"
     },
     {
       "src": "/(.*)",
-      "dest": "/dashboard.html"
+      "dest": "/$1"
     }
   ]
 } 
