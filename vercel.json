@@ -1,47 +1,37 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "api/*.js",
-      "use": "@vercel/node"
+  "functions": {
+    "api/*.js": {
+      "runtime": "@vercel/node@20.x"
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
     },
     {
-      "src": "/leads",
-      "dest": "/leads.html"
+      "source": "/leads",
+      "destination": "/leads.html"
     },
     {
-      "src": "/dashboard",
-      "dest": "/dashboard.html"
+      "source": "/dashboard", 
+      "destination": "/dashboard.html"
     },
     {
-      "src": "/scraper",
-      "dest": "/index.html"
+      "source": "/scraper",
+      "destination": "/index.html"
     },
     {
-      "src": "/email-templates",
-      "dest": "/email-templates.html"
+      "source": "/email-templates",
+      "destination": "/email-templates.html"
     },
     {
-      "src": "/settings",
-      "dest": "/settings.html"
+      "source": "/settings",
+      "destination": "/settings.html"
     },
     {
-      "src": "/(.*\\.(js|css|ico|png|jpg|jpeg|gif|svg|html))",
-      "dest": "/$1"
-    },
-    {
-      "src": "/",
-      "dest": "/dashboard.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/dashboard.html"
+      "source": "/",
+      "destination": "/dashboard.html"
     }
   ]
 } 
