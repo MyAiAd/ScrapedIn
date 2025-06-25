@@ -12,13 +12,6 @@ module.exports = (req, res) => {
     message: 'Ping successful!',
     timestamp: new Date().toISOString(),
     method: req.method,
-    url: req.url,
-    env: {
-      hasSupabaseUrl: !!process.env.SUPABASE_URL,
-      hasSupabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-      hasSmtpUser: !!process.env.SMTP_USER,
-      hasSmtpPass: !!process.env.SMTP_PASS,
-      nodeEnv: process.env.NODE_ENV
-    }
+    url: req.url
   });
 }; 

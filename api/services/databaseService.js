@@ -1,284 +1,334 @@
-const sqlite3 = require('sqlite3').verbose();
-const { v4: uuidv4 } = require('uuid');
+const { createClient } = require('@supabase/supabase-js');
 
 class DatabaseService {
     constructor() {
-        this.dbPath = process.env.DATABASE_PATH || './database.sqlite';
-        this.db = null;
+        this.supabase = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+        );
     }
 
-    // Initialize database and create tables
-    initDatabase() {
-        return new Promise((resolve, reject) => {
-            this.db = new sqlite3.Database(this.dbPath, (err) => {
-                if (err) {
-                    console.error('❌ Error opening database:', err);
-                    reject(err);
-                    return;
-                }
-                
-                console.log('✅ Connected to SQLite database');
-                this.createTables()
-                    .then(resolve)
-                    .catch(reject);
-            });
-        });
-    }
-
-    // Create necessary tables
-    createTables() {
-        return new Promise((resolve, reject) => {
-            const createJobsTable = `
-                CREATE TABLE IF NOT EXISTS jobs (
-                    id TEXT PRIMARY KEY,
-                    linkedin_job_id TEXT,
-                    title TEXT NOT NULL,
-                    company TEXT,
-                    location TEXT,
-                    job_url TEXT,
-                    poster_profile_url TEXT,
-                    poster_full_name TEXT,
-                    contract_type TEXT,
-                    published_at TEXT,
-                    description TEXT,
-                    email_content TEXT,
-                    status TEXT DEFAULT 'pending',
-                    scraped_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    email_sent_at DATETIME,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-                )
-            `;
-
-            const createEmailQueueTable = `
-                CREATE TABLE IF NOT EXISTS email_queue (
-                    id TEXT PRIMARY KEY,
-                    job_id TEXT,
-                    recipient_email TEXT,
-                    subject TEXT,
-                    body TEXT,
-                    status TEXT DEFAULT 'pending',
-                    attempts INTEGER DEFAULT 0,
-                    last_attempt DATETIME,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (job_id) REFERENCES jobs (id)
-                )
-            `;
-
-            this.db.run(createJobsTable, (err) => {
-                if (err) {
-                    console.error('❌ Error creating jobs table:', err);
-                    reject(err);
-                    return;
-                }
-
-                this.db.run(createEmailQueueTable, (err) => {
-                    if (err) {
-                        console.error('❌ Error creating email_queue table:', err);
-                        reject(err);
-                        return;
-                    }
-
-                    console.log('✅ Database tables created successfully');
-                    resolve();
-                });
-            });
-        });
-    }
-
-    // Save a job to the database
+    // Save a job to Supabase
     async saveJob(jobData) {
-        return new Promise((resolve, reject) => {
-            const id = uuidv4();
-            const sql = `
-                INSERT INTO jobs (
-                    id, linkedin_job_id, title, company, location, job_url,
-                    poster_profile_url, poster_full_name, contract_type,
-                    published_at, description, email_content, status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `;
+        try {
+            const jobRecord = {
+                linkedin_job_id: jobData.id || '',
+                title: jobData.title || '',
+                company: jobData.company || '',
+                location: jobData.location || '',
+                job_url: jobData.jobUrl || '',
+                poster_profile_url: jobData.posterProfileUrl || '',
+                poster_full_name: jobData.posterFullName || '',
+                contract_type: jobData.contractType || '',
+                published_at: jobData.publishedAt || '',
+                description: jobData.description || '',
+                email_content: jobData.emailContent || '',
+                status: jobData.status || 'pending'
+            };
 
-            const params = [
-                id,
-                jobData.id || '',
-                jobData.title || '',
-                jobData.company || '',
-                jobData.location || '',
-                jobData.jobUrl || '',
-                jobData.posterProfileUrl || '',
-                jobData.posterFullName || '',
-                jobData.contractType || '',
-                jobData.publishedAt || '',
-                jobData.description || '',
-                jobData.emailContent || '',
-                jobData.status || 'pending'
-            ];
+            const { data, error } = await this.supabase
+                .from('jobs')
+                .insert([jobRecord])
+                .select()
+                .single();
 
-            this.db.run(sql, params, function(err) {
-                if (err) {
-                    console.error('❌ Error saving job:', err);
-                    reject(err);
-                    return;
-                }
+            if (error) {
+                console.error('❌ Error saving job to Supabase:', error);
+                throw error;
+            }
 
-                console.log(`✅ Job saved with ID: ${id}`);
-                resolve({ id, ...jobData });
-            });
-        });
+            console.log(`✅ Job saved with ID: ${data.id}`);
+            return data;
+        } catch (error) {
+            console.error('❌ Error in saveJob:', error);
+            throw error;
+        }
     }
 
     // Get all jobs
     async getAllJobs() {
-        return new Promise((resolve, reject) => {
-            const sql = 'SELECT * FROM jobs ORDER BY created_at DESC';
-            
-            this.db.all(sql, [], (err, rows) => {
-                if (err) {
-                    console.error('❌ Error fetching jobs:', err);
-                    reject(err);
-                    return;
-                }
+        try {
+            const { data, error } = await this.supabase
+                .from('jobs')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-                resolve(rows);
-            });
-        });
+            if (error) {
+                console.error('❌ Error fetching jobs from Supabase:', error);
+                throw error;
+            }
+
+            return data || [];
+        } catch (error) {
+            console.error('❌ Error in getAllJobs:', error);
+            throw error;
+        }
     }
 
     // Get job by ID
     async getJobById(id) {
-        return new Promise((resolve, reject) => {
-            const sql = 'SELECT * FROM jobs WHERE id = ?';
-            
-            this.db.get(sql, [id], (err, row) => {
-                if (err) {
-                    console.error('❌ Error fetching job:', err);
-                    reject(err);
-                    return;
-                }
+        try {
+            const { data, error } = await this.supabase
+                .from('jobs')
+                .select('*')
+                .eq('id', id)
+                .single();
 
-                resolve(row);
-            });
-        });
+            if (error) {
+                console.error('❌ Error fetching job from Supabase:', error);
+                throw error;
+            }
+
+            return data;
+        } catch (error) {
+            console.error('❌ Error in getJobById:', error);
+            throw error;
+        }
     }
 
     // Update job status
     async updateJobStatus(id, status) {
-        return new Promise((resolve, reject) => {
-            const sql = `
-                UPDATE jobs 
-                SET status = ?, updated_at = CURRENT_TIMESTAMP,
-                    email_sent_at = CASE WHEN ? = 'sent' THEN CURRENT_TIMESTAMP ELSE email_sent_at END
-                WHERE id = ?
-            `;
-            
-            this.db.run(sql, [status, status, id], function(err) {
-                if (err) {
-                    console.error('❌ Error updating job status:', err);
-                    reject(err);
-                    return;
-                }
+        try {
+            const updateData = {
+                status: status,
+                updated_at: new Date().toISOString()
+            };
 
-                console.log(`✅ Job ${id} status updated to: ${status}`);
-                resolve();
-            });
-        });
+            if (status === 'sent') {
+                updateData.email_sent_at = new Date().toISOString();
+            }
+
+            const { error } = await this.supabase
+                .from('jobs')
+                .update(updateData)
+                .eq('id', id);
+
+            if (error) {
+                console.error('❌ Error updating job status in Supabase:', error);
+                throw error;
+            }
+
+            console.log(`✅ Job ${id} status updated to: ${status}`);
+        } catch (error) {
+            console.error('❌ Error in updateJobStatus:', error);
+            throw error;
+        }
     }
 
     // Get jobs by status
     async getJobsByStatus(status) {
-        return new Promise((resolve, reject) => {
-            const sql = 'SELECT * FROM jobs WHERE status = ? ORDER BY created_at DESC';
-            
-            this.db.all(sql, [status], (err, rows) => {
-                if (err) {
-                    console.error('❌ Error fetching jobs by status:', err);
-                    reject(err);
-                    return;
-                }
+        try {
+            const { data, error } = await this.supabase
+                .from('jobs')
+                .select('*')
+                .eq('status', status)
+                .order('created_at', { ascending: false });
 
-                resolve(rows);
-            });
-        });
+            if (error) {
+                console.error('❌ Error fetching jobs by status from Supabase:', error);
+                throw error;
+            }
+
+            return data || [];
+        } catch (error) {
+            console.error('❌ Error in getJobsByStatus:', error);
+            throw error;
+        }
     }
 
-    // Add email to queue
+    // Get jobs with pagination and filtering
+    async getJobsWithPagination(page = 1, limit = 10, filters = {}) {
+        try {
+            let query = this.supabase
+                .from('jobs')
+                .select('*', { count: 'exact' });
+
+            // Apply filters
+            if (filters.status) {
+                query = query.eq('status', filters.status);
+            }
+            if (filters.company) {
+                query = query.ilike('company', `%${filters.company}%`);
+            }
+            if (filters.title) {
+                query = query.ilike('title', `%${filters.title}%`);
+            }
+            if (filters.location) {
+                query = query.ilike('location', `%${filters.location}%`);
+            }
+            if (filters.dateFrom) {
+                query = query.gte('created_at', filters.dateFrom);
+            }
+            if (filters.dateTo) {
+                query = query.lte('created_at', filters.dateTo);
+            }
+
+            // Apply pagination
+            const from = (page - 1) * limit;
+            const to = from + limit - 1;
+
+            const { data, error, count } = await query
+                .order('created_at', { ascending: false })
+                .range(from, to);
+
+            if (error) {
+                console.error('❌ Error fetching paginated jobs from Supabase:', error);
+                throw error;
+            }
+
+            const totalPages = Math.ceil(count / limit);
+
+            return {
+                jobs: data || [],
+                pagination: {
+                    currentPage: page,
+                    totalPages: totalPages,
+                    totalItems: count,
+                    itemsPerPage: limit,
+                    hasNext: page < totalPages,
+                    hasPrev: page > 1
+                }
+            };
+        } catch (error) {
+            console.error('❌ Error in getJobsWithPagination:', error);
+            throw error;
+        }
+    }
+
+    // Get job statistics
+    async getJobStats() {
+        try {
+            const { data, error } = await this.supabase
+                .from('jobs')
+                .select('status');
+
+            if (error) {
+                console.error('❌ Error fetching job stats from Supabase:', error);
+                throw error;
+            }
+
+            const stats = {
+                total: data.length,
+                pending: data.filter(job => job.status === 'pending').length,
+                sent: data.filter(job => job.status === 'sent').length,
+                processed: data.filter(job => job.status === 'processed').length
+            };
+
+            return stats;
+        } catch (error) {
+            console.error('❌ Error in getJobStats:', error);
+            throw error;
+        }
+    }
+
+    // Add to email queue
     async addToEmailQueue(jobId, recipientEmail, subject, body) {
-        return new Promise((resolve, reject) => {
-            const id = uuidv4();
-            const sql = `
-                INSERT INTO email_queue (id, job_id, recipient_email, subject, body)
-                VALUES (?, ?, ?, ?, ?)
-            `;
+        try {
+            const emailRecord = {
+                job_id: jobId,
+                recipient_email: recipientEmail,
+                subject: subject,
+                body: body,
+                status: 'pending',
+                attempts: 0
+            };
 
-            this.db.run(sql, [id, jobId, recipientEmail, subject, body], function(err) {
-                if (err) {
-                    console.error('❌ Error adding to email queue:', err);
-                    reject(err);
-                    return;
-                }
+            const { data, error } = await this.supabase
+                .from('email_queue')
+                .insert([emailRecord])
+                .select()
+                .single();
 
-                console.log(`✅ Email queued with ID: ${id}`);
-                resolve({ id, jobId, recipientEmail, subject, body });
-            });
-        });
+            if (error) {
+                console.error('❌ Error adding to email queue in Supabase:', error);
+                throw error;
+            }
+
+            console.log(`✅ Email added to queue with ID: ${data.id}`);
+            return data;
+        } catch (error) {
+            console.error('❌ Error in addToEmailQueue:', error);
+            throw error;
+        }
     }
 
-    // Get pending emails from queue
+    // Get pending emails
     async getPendingEmails() {
-        return new Promise((resolve, reject) => {
-            const sql = `
-                SELECT eq.*, j.title as job_title, j.company 
-                FROM email_queue eq
-                JOIN jobs j ON eq.job_id = j.id
-                WHERE eq.status = 'pending'
-                ORDER BY eq.created_at ASC
-            `;
-            
-            this.db.all(sql, [], (err, rows) => {
-                if (err) {
-                    console.error('❌ Error fetching pending emails:', err);
-                    reject(err);
-                    return;
-                }
+        try {
+            const { data, error } = await this.supabase
+                .from('email_queue')
+                .select('*')
+                .eq('status', 'pending')
+                .order('created_at', { ascending: true });
 
-                resolve(rows);
-            });
-        });
+            if (error) {
+                console.error('❌ Error fetching pending emails from Supabase:', error);
+                throw error;
+            }
+
+            return data || [];
+        } catch (error) {
+            console.error('❌ Error in getPendingEmails:', error);
+            throw error;
+        }
     }
 
-    // Update email queue status
+    // Update email status
     async updateEmailStatus(id, status) {
-        return new Promise((resolve, reject) => {
-            const sql = `
-                UPDATE email_queue 
-                SET status = ?, last_attempt = CURRENT_TIMESTAMP,
-                    attempts = attempts + 1
-                WHERE id = ?
-            `;
-            
-            this.db.run(sql, [status, id], function(err) {
-                if (err) {
-                    console.error('❌ Error updating email status:', err);
-                    reject(err);
-                    return;
-                }
+        try {
+            const updateData = {
+                status: status,
+                last_attempt: new Date().toISOString()
+            };
 
-                console.log(`✅ Email ${id} status updated to: ${status}`);
-                resolve();
-            });
-        });
+            if (status === 'failed') {
+                // Increment attempts count
+                const { data: currentData } = await this.supabase
+                    .from('email_queue')
+                    .select('attempts')
+                    .eq('id', id)
+                    .single();
+
+                if (currentData) {
+                    updateData.attempts = (currentData.attempts || 0) + 1;
+                }
+            }
+
+            const { error } = await this.supabase
+                .from('email_queue')
+                .update(updateData)
+                .eq('id', id);
+
+            if (error) {
+                console.error('❌ Error updating email status in Supabase:', error);
+                throw error;
+            }
+
+            console.log(`✅ Email ${id} status updated to: ${status}`);
+        } catch (error) {
+            console.error('❌ Error in updateEmailStatus:', error);
+            throw error;
+        }
     }
 
-    // Close database connection
-    close() {
-        if (this.db) {
-            this.db.close((err) => {
-                if (err) {
-                    console.error('❌ Error closing database:', err);
-                } else {
-                    console.log('✅ Database connection closed');
-                }
-            });
+    // Test database connection
+    async testConnection() {
+        try {
+            const { data, error } = await this.supabase
+                .from('jobs')
+                .select('count')
+                .limit(1);
+
+            if (error) {
+                console.error('❌ Database connection test failed:', error);
+                return false;
+            }
+
+            console.log('✅ Database connection test successful');
+            return true;
+        } catch (error) {
+            console.error('❌ Database connection test error:', error);
+            return false;
         }
     }
 }

@@ -1,4 +1,3 @@
-require('dotenv').config({ path: './config.env' });
 const emailService = require('../services/emailService');
 
 module.exports = async (req, res) => {
