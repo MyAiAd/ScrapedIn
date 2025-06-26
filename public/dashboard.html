@@ -601,7 +601,7 @@
                     const data = await response.json();
                     
                     // Check AI providers
-                    const hasAI = data.hasAI;
+                    const hasAI = data.aiProviders && (data.aiProviders.openai || data.aiProviders.openrouter || data.aiProviders.anthropic);
                     systemStatus.ai = hasAI;
                     updateStatusIndicator('aiStatus', 'aiStatusText', hasAI, hasAI ? 'Connected' : 'Not Configured');
                     
@@ -741,17 +741,28 @@
         function sendTestEmail() {
             const email = prompt('Enter test email address:');
             if (email) {
-                fetch('/api/email/test', {
+                fetch('/api/ping?action=email', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, useAI: false })
+                    body: JSON.stringify({ to: email, isTest: true, useAI: false })
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert('✅ Test email sent successfully!');
+                        alert(`✅ Test email sent successfully via ${data.provider}!`);
                     } else {
-                        alert('❌ Failed to send test email: ' + data.error);
+                        let errorMsg = data.error;
+                        
+                        // Provide user-friendly error messages
+                        if (errorMsg.includes('not authorized') || errorMsg.includes('AccessDenied')) {
+                            errorMsg = 'AWS SES Permission Error: Please check your AWS IAM permissions for SES.';
+                        } else if (errorMsg.includes('Email address not verified')) {
+                            errorMsg = 'Email Verification Error: Please verify your email/domain in AWS SES.';
+                        } else if (errorMsg.includes('No email service configured')) {
+                            errorMsg = 'Configuration Error: Please set up AWS SES or SMTP credentials.';
+                        }
+                        
+                        alert(`❌ Failed to send test email via ${data.provider}: ${errorMsg}`);
                     }
                 })
                 .catch(error => {
