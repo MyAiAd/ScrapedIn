@@ -983,7 +983,7 @@
 
             showAlert('Sending test email...', 'info');
             try {
-                const response = await fetch('/api/email/send', {
+                const response = await fetch('/api/ping?action=email', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
