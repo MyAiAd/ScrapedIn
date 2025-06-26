@@ -244,7 +244,9 @@ export default async function handler(req, res) {
           provider: result.provider
         });
       } else {
-        return res.status(500).json({
+        // Determine appropriate status code based on error type
+        const statusCode = result.error.includes('not authorized') || result.error.includes('AccessDenied') ? 400 : 500;
+        return res.status(statusCode).json({
           success: false,
           error: result.error,
           provider: result.provider

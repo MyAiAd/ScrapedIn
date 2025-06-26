@@ -998,7 +998,18 @@
                 if (data.success) {
                     showAlert(`✅ Test email sent successfully via ${data.provider}!`, 'success');
                 } else {
-                    showAlert(`❌ Failed to send test email via ${data.provider}: ${data.error}`, 'error');
+                    let errorMsg = data.error;
+                    
+                    // Provide user-friendly error messages for common issues
+                    if (errorMsg.includes('not authorized') || errorMsg.includes('AccessDenied')) {
+                        errorMsg = 'AWS SES Permission Error: The AWS user does not have permission to send emails. Please check your AWS IAM permissions for SES.';
+                    } else if (errorMsg.includes('Email address not verified')) {
+                        errorMsg = 'Email Verification Error: The sender email address is not verified in AWS SES. Please verify your email/domain in the AWS SES console.';
+                    } else if (errorMsg.includes('No email service configured')) {
+                        errorMsg = 'Configuration Error: No email service is configured. Please set up AWS SES or SMTP credentials.';
+                    }
+                    
+                    showAlert(`❌ Failed to send test email via ${data.provider}: ${errorMsg}`, 'error');
                 }
             } catch (error) {
                 showAlert('❌ Error sending test email: ' + error.message, 'error');
