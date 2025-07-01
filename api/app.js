@@ -23,7 +23,7 @@ databaseService.initDatabase();
 // ===== EMAIL API ENDPOINTS =====
 
 // Generate email with AI
-app.post('/api/email/generate', async (req, res) => {
+app.post('/email/generate', async (req, res) => {
     try {
         const { jobData, templateKey, useAI, forceTemplate } = req.body;
         
@@ -59,7 +59,7 @@ app.post('/api/email/generate', async (req, res) => {
 });
 
 // Get available templates
-app.get('/api/email/templates', async (req, res) => {
+app.get('/email/templates', async (req, res) => {
     try {
         const templates = emailService.getTemplates();
         res.json({
@@ -77,33 +77,33 @@ app.get('/api/email/templates', async (req, res) => {
 // ===== MJML API ENDPOINTS =====
 
 // Compile MJML to HTML
-app.post('/api/email/mjml/compile', async (req, res) => {
+app.post('/email/mjml/compile', async (req, res) => {
     await mjmlService.handleCompile(req, res);
 });
 
 // Save MJML template
-app.post('/api/email/mjml/save', async (req, res) => {
+app.post('/email/mjml/save', async (req, res) => {
     await mjmlService.handleSave(req, res);
 });
 
 // Load MJML template
-app.get('/api/email/mjml/load', async (req, res) => {
+app.get('/email/mjml/load', async (req, res) => {
     await mjmlService.handleLoad(req, res);
 });
 
 // List MJML templates
-app.get('/api/email/mjml/list', async (req, res) => {
+app.get('/email/mjml/list', async (req, res) => {
     await mjmlService.handleList(req, res);
 });
 
 // Delete MJML template
-app.delete('/api/email/mjml/delete', async (req, res) => {
+app.delete('/email/mjml/delete', async (req, res) => {
     await mjmlService.handleDelete(req, res);
 });
 
 // Add all other API routes from server.js here...
 // For now, let's add a basic health check
-app.get('/api/health', (req, res) => {
+app.get('/health', (req, res) => {
     res.json({ success: true, message: 'API is running' });
 });
 
