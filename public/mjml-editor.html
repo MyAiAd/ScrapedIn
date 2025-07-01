@@ -455,7 +455,7 @@
             document.getElementById('previewFrame').style.display = 'none';
 
             try {
-                const response = await fetch('/api/email/mjml/compile', {
+                const response = await fetch('/api/mjml-compile', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ mjml: mjmlCode, deviceView: currentDeviceView })
@@ -719,7 +719,7 @@
             if (!templateName) return;
 
             try {
-                const response = await fetch('/api/email/mjml/save', {
+                const response = await fetch('/api/mjml-save', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -745,7 +745,7 @@
             const mjmlCode = editor.getValue();
 
             try {
-                const response = await fetch('/api/email/mjml/compile', {
+                const response = await fetch('/api/mjml-compile', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ mjml: mjmlCode })
