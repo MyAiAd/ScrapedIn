@@ -5,6 +5,7 @@
     { "source": "/scraper", "destination": "/scraper.html" },
     { "source": "/leads", "destination": "/leads.html" },
     { "source": "/settings", "destination": "/settings.html" },
-    { "source": "/email-templates", "destination": "/email-templates.html" }
+    { "source": "/email-templates", "destination": "/email-templates.html" },
+    { "source": "/mjml-editor", "destination": "/mjml-editor.html" }
   ]
 } 

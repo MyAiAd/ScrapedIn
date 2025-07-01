@@ -8,6 +8,7 @@ const apifyService = require('./services/apifyService');
 const emailService = require('./services/emailService');
 const sheetsService = require('./services/sheetsService');
 const databaseService = require('./services/databaseService');
+const mjmlService = require('./email/mjml');
 
 const app = express();
 
@@ -71,6 +72,33 @@ app.get('/api/email/templates', async (req, res) => {
             error: error.message
         });
     }
+});
+
+// ===== MJML API ENDPOINTS =====
+
+// Compile MJML to HTML
+app.post('/api/email/mjml/compile', async (req, res) => {
+    await mjmlService.handleCompile(req, res);
+});
+
+// Save MJML template
+app.post('/api/email/mjml/save', async (req, res) => {
+    await mjmlService.handleSave(req, res);
+});
+
+// Load MJML template
+app.get('/api/email/mjml/load', async (req, res) => {
+    await mjmlService.handleLoad(req, res);
+});
+
+// List MJML templates
+app.get('/api/email/mjml/list', async (req, res) => {
+    await mjmlService.handleList(req, res);
+});
+
+// Delete MJML template
+app.delete('/api/email/mjml/delete', async (req, res) => {
+    await mjmlService.handleDelete(req, res);
 });
 
 // Add all other API routes from server.js here...

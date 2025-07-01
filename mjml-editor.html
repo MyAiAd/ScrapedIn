@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MJML Email Template Editor - ScrapedIn</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0077b5 0%, #00a0dc 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .brand-logo h1 {
+            font-family: 'Inter', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-bar {
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            padding: 15px 0;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .nav-link {
+            color: #0077b5;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            background: #f8f9fa;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #0077b5;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 119, 181, 0.3);
+        }
+
+        .toolbar {
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            height: calc(100vh - 200px);
+        }
+
+        .editor-panel {
+            flex: 1;
+            background: white;
+            border-right: 1px solid #e9ecef;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-panel {
+            flex: 1;
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            background: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .editor-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .CodeMirror {
+            height: 100% !important;
+            font-size: 14px;
+        }
+
+        .preview-container {
+            flex: 1;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        .preview-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0077b5 0%, #00a0dc 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 119, 181, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.8rem;
+        }
+
+        .template-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .template-selector select {
+            padding: 8px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0077b5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .editor-panel,
+            .preview-panel {
+                flex: none;
+                height: 50vh;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            .nav-links {
+                gap: 15px;
+            }
+
+            .nav-link {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="brand-logo">
+            <h1><span style="color: #000000;">Scraped</span><span style="background: #0077b5; color: white; padding: 4px 8px; border-radius: 8px; margin-left: 5px; font-weight: 600;">in</span> MJML Editor</h1>
+        </div>
+        <p>Professional email template designer with MJML</p>
+    </div>
+
+    <!-- Navigation Bar -->
+    <div class="nav-bar">
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-link">🏠 Dashboard</a>
+            <a href="/scraper" class="nav-link">🔍 Scraper</a>
+            <a href="/leads" class="nav-link">📊 Leads Database</a>
+            <a href="/email-templates" class="nav-link">🤖 Email Templates</a>
+            <a href="/mjml-editor" class="nav-link active">📝 MJML Editor</a>
+            <a href="/settings" class="nav-link">⚙️ Settings</a>
+        </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="template-selector">
+            <label>Template:</label>
+            <select id="templateSelect" onchange="loadTemplate()">
+                <option value="blank">Blank Template</option>
+                <option value="basic">Basic Newsletter</option>
+                <option value="job-outreach">Job Outreach</option>
+                <option value="follow-up">Follow-up Email</option>
+                <option value="welcome">Welcome Email</option>
+            </select>
+        </div>
+        
+        <button class="btn btn-primary" onclick="compilePreview()">🔄 Preview</button>
+        <button class="btn btn-success" onclick="saveTemplate()">💾 Save Template</button>
+        <button class="btn btn-secondary" onclick="exportHTML()">📤 Export HTML</button>
+        <a href="/email-templates" class="btn btn-secondary">← Back</a>
+    </div>
+
+    <div id="alertContainer"></div>
+
+    <div class="main-container">
+        <!-- Editor Panel -->
+        <div class="editor-panel">
+            <div class="panel-header">
+                <span>MJML Code</span>
+                <div>
+                    <button class="btn btn-secondary btn-small" onclick="insertComponent('section')">+ Section</button>
+                    <button class="btn btn-secondary btn-small" onclick="insertComponent('text')">+ Text</button>
+                    <button class="btn btn-secondary btn-small" onclick="insertComponent('button')">+ Button</button>
+                </div>
+            </div>
+            <div class="editor-container">
+                <textarea id="mjmlEditor">
+<mjml>
+  <mj-head>
+    <mj-title>ScrapedIn Email Template</mj-title>
+    <mj-preview>Your LinkedIn outreach made easy</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="Arial, sans-serif"/>
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section background-color="#0077b5" padding="20px">
+      <mj-column>
+        <mj-text align="center" color="white" font-size="24px" font-weight="bold">
+          ScrapedIn
+        </mj-text>
+        <mj-text align="center" color="white" font-size="16px">
+          Professional LinkedIn Outreach
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    
+    <mj-section background-color="white" padding="40px 20px">
+      <mj-column>
+        <mj-text font-size="18px" color="#333333" line-height="1.6">
+          Hi {{contact_name}},
+        </mj-text>
+        <mj-text font-size="16px" color="#666666" line-height="1.6" padding-top="20px">
+          I came across your profile on LinkedIn and was impressed by your experience at {{company}}. 
+          I believe there might be an exciting opportunity that aligns with your background in {{job_title}}.
+        </mj-text>
+        <mj-text font-size="16px" color="#666666" line-height="1.6" padding-top="20px">
+          Would you be open to a brief conversation about this role? I'd love to share more details about 
+          what we're looking for and learn about your career goals.
+        </mj-text>
+        <mj-button background-color="#0077b5" color="white" href="#" padding-top="30px">
+          Let's Connect
+        </mj-button>
+      </mj-column>
+    </mj-section>
+    
+    <mj-section background-color="#f8f9fa" padding="20px">
+      <mj-column>
+        <mj-text align="center" font-size="12px" color="#999999">
+          This email was sent by ScrapedIn - Professional LinkedIn Automation
+        </mj-text>
+        <mj-text align="center" font-size="12px" color="#999999">
+          <a href="#" style="color: #0077b5;">Unsubscribe</a> | <a href="#" style="color: #0077b5;">Update Preferences</a>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
+                </textarea>
+            </div>
+        </div>
+
+        <!-- Preview Panel -->
+        <div class="preview-panel">
+            <div class="panel-header">
+                <span>Email Preview</span>
+                <div>
+                    <button class="btn btn-secondary btn-small" onclick="toggleDevicePreview('desktop')">🖥️ Desktop</button>
+                    <button class="btn btn-secondary btn-small" onclick="toggleDevicePreview('mobile')">📱 Mobile</button>
+                </div>
+            </div>
+            <div class="preview-container">
+                <div class="loading" id="previewLoading">
+                    <div class="spinner"></div>
+                    <p>Compiling MJML...</p>
+                </div>
+                <iframe id="previewFrame" class="preview-iframe" style="display: none;"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let editor;
+        let currentDeviceView = 'desktop';
+
+        // Initialize CodeMirror editor
+        document.addEventListener('DOMContentLoaded', function() {
+            editor = CodeMirror.fromTextArea(document.getElementById('mjmlEditor'), {
+                mode: 'xml',
+                theme: 'material-darker',
+                lineNumbers: true,
+                lineWrapping: true,
+                indentUnit: 2,
+                tabSize: 2,
+                autoCloseTags: true,
+                matchBrackets: true,
+                foldGutter: true,
+                gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]
+            });
+
+            editor.on('change', debounce(compilePreview, 1000));
+            
+            // Initial preview
+            setTimeout(compilePreview, 500);
+        });
+
+        // Debounce function for auto-preview
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Compile MJML and show preview
+        async function compilePreview() {
+            const mjmlCode = editor.getValue();
+            showLoading('previewLoading', true);
+            document.getElementById('previewFrame').style.display = 'none';
+
+            try {
+                const response = await fetch('/api/email/mjml/compile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mjml: mjmlCode, deviceView: currentDeviceView })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    displayPreview(result.html);
+                    clearAlert();
+                } else {
+                    showAlert('MJML compilation error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message, 'error');
+            } finally {
+                showLoading('previewLoading', false);
+            }
+        }
+
+        // Display HTML preview in iframe
+        function displayPreview(html) {
+            const iframe = document.getElementById('previewFrame');
+            iframe.style.display = 'block';
+            
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            doc.open();
+            doc.write(html);
+            doc.close();
+        }
+
+        // Load predefined templates
+        function loadTemplate() {
+            const templateType = document.getElementById('templateSelect').value;
+            let templateCode = '';
+
+            switch(templateType) {
+                case 'basic':
+                    templateCode = getBasicTemplate();
+                    break;
+                case 'job-outreach':
+                    templateCode = getJobOutreachTemplate();
+                    break;
+                case 'follow-up':
+                    templateCode = getFollowUpTemplate();
+                    break;
+                case 'welcome':
+                    templateCode = getWelcomeTemplate();
+                    break;
+                default:
+                    templateCode = getBlankTemplate();
+            }
+
+            editor.setValue(templateCode);
+            compilePreview();
+        }
+
+        // Template definitions
+        function getBlankTemplate() {
+            return `<mjml>
+  <mj-head>
+    <mj-title>Email Template</mj-title>
+    <mj-attributes>
+      <mj-all font-family="Arial, sans-serif"/>
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>Your content here...</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>`;
+        }
+
+        function getJobOutreachTemplate() {
+            return `<mjml>
+  <mj-head>
+    <mj-title>Job Opportunity - {{job_title}}</mj-title>
+    <mj-preview>Exciting opportunity at {{company}}</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="Arial, sans-serif"/>
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section background-color="#0077b5" padding="20px">
+      <mj-column>
+        <mj-text align="center" color="white" font-size="24px" font-weight="bold">
+          ScrapedIn
+        </mj-text>
+        <mj-text align="center" color="white" font-size="16px">
+          Professional Recruitment Platform
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    
+    <mj-section background-color="white" padding="40px 20px">
+      <mj-column>
+        <mj-text font-size="18px" color="#333333" line-height="1.6">
+          Hello {{contact_name}},
+        </mj-text>
+        <mj-text font-size="16px" color="#666666" line-height="1.6" padding-top="20px">
+          I hope this message finds you well. I came across your impressive profile on LinkedIn and noticed your expertise in {{job_title}} at {{company}}.
+        </mj-text>
+        <mj-text font-size="16px" color="#666666" line-height="1.6" padding-top="20px">
+          I'm currently working with a leading company that has an exciting {{job_title}} opportunity. Based on your background and experience, I believe this role could be a perfect fit for your career goals.
+        </mj-text>
+        <mj-text font-size="16px" color="#666666" line-height="1.6" padding-top="20px">
+          Would you be interested in learning more about this opportunity? I'd love to discuss the details and see if there's a mutual fit.
+        </mj-text>
+        <mj-button background-color="#0077b5" color="white" href="mailto:{{recruiter_email}}" padding-top="30px">
+          Let's Connect
+        </mj-button>
+      </mj-column>
+    </mj-section>
+    
+    <mj-section background-color="#f8f9fa" padding="20px">
+      <mj-column>
+        <mj-text align="center" font-size="12px" color="#999999">
+          Best regards,<br/>{{recruiter_name}}<br/>{{company_name}}
+        </mj-text>
+        <mj-divider border-color="#e9ecef" padding="10px 0"/>
+        <mj-text align="center" font-size="12px" color="#999999">
+          <a href="#" style="color: #0077b5;">Unsubscribe</a> | <a href="#" style="color: #0077b5;">Privacy Policy</a>
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>`;
+        }
+
+        function getBasicTemplate() {
+            return `<mjml>
+  <mj-head>
+    <mj-title>Newsletter Template</mj-title>
+    <mj-attributes>
+      <mj-all font-family="Arial, sans-serif"/>
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section background-color="#f4f4f4" padding="20px">
+      <mj-column>
+        <mj-text align="center" font-size="24px" font-weight="bold">
+          Newsletter
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="white" padding="20px">
+      <mj-column>
+        <mj-text font-size="16px" line-height="1.6">
+          Welcome to our newsletter! Here's what's new this week.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>`;
+        }
+
+        function getFollowUpTemplate() {
+            return `<mjml>
+  <mj-head>
+    <mj-title>Follow-up Message</mj-title>
+    <mj-attributes>
+      <mj-all font-family="Arial, sans-serif"/>
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section background-color="white" padding="40px 20px">
+      <mj-column>
+        <mj-text font-size="18px" color="#333333">
+          Hi {{contact_name}},
+        </mj-text>
+        <mj-text font-size="16px" color="#666666" line-height="1.6" padding-top="20px">
+          I wanted to follow up on my previous message regarding the {{job_title}} opportunity.
+        </mj-text>
+        <mj-text font-size="16px" color="#666666" line-height="1.6" padding-top="20px">
+          I understand you're likely busy, but I believe this role could be a great fit for your career path.
+        </mj-text>
+        <mj-button background-color="#28a745" color="white" href="#" padding-top="20px">
+          Let's Schedule a Call
+        </mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>`;
+        }
+
+        function getWelcomeTemplate() {
+            return `<mjml>
+  <mj-head>
+    <mj-title>Welcome to ScrapedIn</mj-title>
+    <mj-attributes>
+      <mj-all font-family="Arial, sans-serif"/>
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+    <mj-section background-color="#0077b5" padding="40px 20px">
+      <mj-column>
+        <mj-text align="center" color="white" font-size="28px" font-weight="bold">
+          Welcome to ScrapedIn!
+        </mj-text>
+        <mj-text align="center" color="white" font-size="16px" padding-top="10px">
+          Your LinkedIn automation journey starts here
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section background-color="white" padding="40px 20px">
+      <mj-column>
+        <mj-text font-size="18px" color="#333333">
+          Hello {{user_name}},
+        </mj-text>
+        <mj-text font-size="16px" color="#666666" line-height="1.6" padding-top="20px">
+          Thank you for joining ScrapedIn! We're excited to help you streamline your LinkedIn outreach and find the perfect candidates.
+        </mj-text>
+        <mj-button background-color="#0077b5" color="white" href="#" padding-top="30px">
+          Get Started
+        </mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>`;
+        }
+
+        // Insert MJML components
+        function insertComponent(type) {
+            let componentCode = '';
+            
+            switch(type) {
+                case 'section':
+                    componentCode = `
+    <mj-section background-color="white" padding="20px">
+      <mj-column>
+        <mj-text>New section content</mj-text>
+      </mj-column>
+    </mj-section>`;
+                    break;
+                case 'text':
+                    componentCode = `
+        <mj-text font-size="16px" color="#333333" line-height="1.6">
+          Your text content here
+        </mj-text>`;
+                    break;
+                case 'button':
+                    componentCode = `
+        <mj-button background-color="#0077b5" color="white" href="#">
+          Click Here
+        </mj-button>`;
+                    break;
+            }
+            
+            const cursor = editor.getCursor();
+            editor.replaceRange(componentCode, cursor);
+        }
+
+        // Save template
+        async function saveTemplate() {
+            const mjmlCode = editor.getValue();
+            const templateName = prompt('Enter template name:');
+            
+            if (!templateName) return;
+
+            try {
+                const response = await fetch('/api/email/mjml/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        name: templateName, 
+                        mjml: mjmlCode 
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('Template saved successfully!', 'success');
+                } else {
+                    showAlert('Failed to save template: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message, 'error');
+            }
+        }
+
+        // Export HTML
+        async function exportHTML() {
+            const mjmlCode = editor.getValue();
+
+            try {
+                const response = await fetch('/api/email/mjml/compile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mjml: mjmlCode })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Create and download HTML file
+                    const blob = new Blob([result.html], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'email-template.html';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                    showAlert('HTML exported successfully!', 'success');
+                } else {
+                    showAlert('Export failed: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showAlert('Export error: ' + error.message, 'error');
+            }
+        }
+
+        // Toggle device preview
+        function toggleDevicePreview(device) {
+            currentDeviceView = device;
+            compilePreview();
+        }
+
+        // Utility functions
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        function clearAlert() {
+            document.getElementById('alertContainer').innerHTML = '';
+        }
+
+        function showLoading(loadingId, show) {
+            const element = document.getElementById(loadingId);
+            if (show) {
+                element.classList.add('show');
+            } else {
+                element.classList.remove('show');
+            }
+        }
+    </script>
+</body>
+</html> 
