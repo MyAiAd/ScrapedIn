@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MJML Email Template Editor - ScrapedIn</title>
+    <title>Email Template Editor - ScrapedIn</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://unpkg.com/mjml-browser@4.15.3/lib/index.js"></script>
     <style>
         * {
             margin: 0;
@@ -285,9 +286,9 @@
 <body>
     <div class="header">
         <div class="brand-logo">
-            <h1><span style="color: #000000;">Scraped</span><span style="background: #0077b5; color: white; padding: 4px 8px; border-radius: 8px; margin-left: 5px; font-weight: 600;">in</span> MJML Editor</h1>
+            <h1><span style="color: #000000;">Scraped</span><span style="background: #0077b5; color: white; padding: 4px 8px; border-radius: 8px; margin-left: 5px; font-weight: 600;">in</span></h1>
         </div>
-        <p>Professional email template designer with MJML</p>
+        <p>Professional email template designer</p>
     </div>
 
     <!-- Navigation Bar -->
@@ -297,7 +298,7 @@
             <a href="/scraper" class="nav-link">🔍 Scraper</a>
             <a href="/leads" class="nav-link">📊 Leads Database</a>
             <a href="/email-templates" class="nav-link">🤖 Email Templates</a>
-            <a href="/mjml-editor" class="nav-link active">📝 MJML Editor</a>
+            <a href="/mjml-editor" class="nav-link active">📝 New Editor</a>
             <a href="/settings" class="nav-link">⚙️ Settings</a>
         </div>
     </div>
@@ -327,7 +328,7 @@
         <!-- Editor Panel -->
         <div class="editor-panel">
             <div class="panel-header">
-                <span>MJML Code</span>
+                <span>Template Code</span>
                 <div>
                     <button class="btn btn-secondary btn-small" onclick="insertComponent('section')">+ Section</button>
                     <button class="btn btn-secondary btn-small" onclick="insertComponent('text')">+ Text</button>
@@ -403,7 +404,7 @@
             <div class="preview-container">
                 <div class="loading" id="previewLoading">
                     <div class="spinner"></div>
-                    <p>Compiling MJML...</p>
+                    <p>Compiling template...</p>
                 </div>
                 <iframe id="previewFrame" class="preview-iframe" style="display: none;"></iframe>
             </div>
@@ -455,22 +456,41 @@
             document.getElementById('previewFrame').style.display = 'none';
 
             try {
-                const response = await fetch('/api/mjml-compile', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ mjml: mjmlCode, deviceView: currentDeviceView })
+                // Use client-side MJML compilation
+                if (typeof mjml === 'undefined') {
+                    throw new Error('MJML library not loaded');
+                }
+
+                const result = mjml(mjmlCode, {
+                    validationLevel: 'soft'
                 });
 
-                const result = await response.json();
-
-                if (result.success) {
-                    displayPreview(result.html);
-                    clearAlert();
-                } else {
-                    showAlert('MJML compilation error: ' + result.error, 'error');
+                if (result.errors && result.errors.length > 0) {
+                    console.warn('MJML compilation warnings:', result.errors);
                 }
+
+                let html = result.html;
+                
+                // Add responsive CSS for mobile view if needed
+                if (currentDeviceView === 'mobile') {
+                    html = html.replace(
+                        '<style type="text/css">',
+                        `<style type="text/css">
+                            @media only screen and (max-width: 480px) {
+                                .mj-column-per-100 { width: 100% !important; max-width: 100% !important; }
+                                .mj-column-per-50 { width: 100% !important; max-width: 100% !important; }
+                                .mj-column-per-33 { width: 100% !important; max-width: 100% !important; }
+                                .mj-column-per-25 { width: 100% !important; max-width: 100% !important; }
+                            }`
+                    );
+                }
+
+                displayPreview(html);
+                clearAlert();
+                
             } catch (error) {
-                showAlert('Network error: ' + error.message, 'error');
+                console.error('Template compilation error:', error);
+                showAlert('Template compilation error: ' + error.message, 'error');
             } finally {
                 showLoading('previewLoading', false);
             }
@@ -745,15 +765,16 @@
             const mjmlCode = editor.getValue();
 
             try {
-                const response = await fetch('/api/mjml-compile', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ mjml: mjmlCode })
+                // Use client-side MJML compilation
+                if (typeof mjml === 'undefined') {
+                    throw new Error('MJML library not loaded');
+                }
+
+                const result = mjml(mjmlCode, {
+                    validationLevel: 'soft'
                 });
 
-                const result = await response.json();
-
-                if (result.success) {
+                if (result.html) {
                     // Create and download HTML file
                     const blob = new Blob([result.html], { type: 'text/html' });
                     const url = URL.createObjectURL(blob);
@@ -765,9 +786,10 @@
                     
                     showAlert('HTML exported successfully!', 'success');
                 } else {
-                    showAlert('Export failed: ' + result.error, 'error');
+                    showAlert('Export failed: Invalid template code', 'error');
                 }
             } catch (error) {
+                console.error('Export error:', error);
                 showAlert('Export error: ' + error.message, 'error');
             }
         }
