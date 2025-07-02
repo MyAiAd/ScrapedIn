@@ -778,6 +778,10 @@
             // Start with visual editor
             switchView('visual');
             
+            // Ensure properties panel starts closed
+            document.getElementById('propertiesPanel').classList.remove('open');
+            selectedComponent = null;
+            
             // Initial preview
             setTimeout(compilePreview, 500);
         });
@@ -819,6 +823,40 @@
         function initializeVisualEditor() {
             setupDragAndDrop();
             loadInitialContent();
+            setupCanvasClickHandler();
+        }
+
+        // Setup click handler to close properties panel when clicking on canvas
+        function setupCanvasClickHandler() {
+            const canvas = document.getElementById('emailCanvas');
+            const visualCanvas = document.querySelector('.visual-canvas');
+            
+            // Close properties panel when clicking on empty canvas area
+            if (canvas) {
+                canvas.addEventListener('click', function(e) {
+                    if (e.target === canvas || e.target.classList.contains('drop-zone')) {
+                        // Clear selection and close properties panel
+                        document.querySelectorAll('.visual-component.selected').forEach(el => {
+                            el.classList.remove('selected');
+                        });
+                        selectedComponent = null;
+                        document.getElementById('propertiesPanel').classList.remove('open');
+                    }
+                });
+            }
+            
+            if (visualCanvas) {
+                visualCanvas.addEventListener('click', function(e) {
+                    if (e.target === visualCanvas) {
+                        // Clear selection and close properties panel
+                        document.querySelectorAll('.visual-component.selected').forEach(el => {
+                            el.classList.remove('selected');
+                        });
+                        selectedComponent = null;
+                        document.getElementById('propertiesPanel').classList.remove('open');
+                    }
+                });
+            }
         }
 
         // Setup drag and drop functionality
@@ -899,8 +937,7 @@
                 container.appendChild(componentElement);
             }
 
-            // Auto-select the new component
-            selectComponent(componentId);
+            // Don't auto-select - let user click to edit if they want
         }
 
         // Create component content based on type
@@ -1030,6 +1067,35 @@
                         </div>
                     `;
                     break;
+                case 'section':
+                    const sectionDiv = component.querySelector('.component-content div');
+                    let currentBgColor = '#ffffff';
+                    if (sectionDiv && sectionDiv.style.backgroundColor) {
+                        // Convert rgb() values to hex if needed
+                        const bgColor = sectionDiv.style.backgroundColor;
+                        if (bgColor.startsWith('rgb')) {
+                            currentBgColor = rgbToHex(bgColor);
+                        } else {
+                            currentBgColor = bgColor;
+                        }
+                    }
+                    const currentPadding = sectionDiv ? sectionDiv.style.padding : '20px';
+                    
+                    propertiesHTML += `
+                        <div class="property-group">
+                            <label class="property-label">Background Color:</label>
+                            <input type="color" class="property-input" onchange="updateComponentProperty('sectionBackgroundColor', this.value)" value="${currentBgColor}">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Padding:</label>
+                            <input type="text" class="property-input" onchange="updateComponentProperty('sectionPadding', this.value)" placeholder="20px" value="${currentPadding}">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Section Content:</label>
+                            <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">This section contains multiple child elements. Click on individual text/heading elements within the section to edit them individually.</p>
+                        </div>
+                    `;
+                    break;
             }
 
             content.innerHTML = propertiesHTML;
@@ -1110,6 +1176,22 @@
                         content.querySelector('h2').style.textAlign = value;
                     }
                     break;
+                case 'sectionBackgroundColor':
+                    if (type === 'section') {
+                        const sectionDiv = content.querySelector('div');
+                        if (sectionDiv) {
+                            sectionDiv.style.backgroundColor = value;
+                        }
+                    }
+                    break;
+                case 'sectionPadding':
+                    if (type === 'section') {
+                        const sectionDiv = content.querySelector('div');
+                        if (sectionDiv) {
+                            sectionDiv.style.padding = value;
+                        }
+                    }
+                    break;
             }
         }
 
@@ -1139,9 +1221,40 @@
 
         // Load initial content in visual editor
         function loadInitialContent() {
-            // Add a sample text component to get started
+            // Add a sample text component to get started (but don't auto-select it)
             setTimeout(() => {
-                addVisualComponent('text', document.getElementById('mainDropZone'));
+                const canvas = document.getElementById('mainDropZone');
+                componentCounter++;
+                const componentId = `component_${componentCounter}`;
+                
+                const componentElement = document.createElement('div');
+                componentElement.className = 'visual-component';
+                componentElement.dataset.id = componentId;
+                componentElement.dataset.type = 'text';
+                
+                // Add component toolbar
+                const toolbar = document.createElement('div');
+                toolbar.className = 'component-toolbar';
+                toolbar.innerHTML = `
+                    <button class="toolbar-btn" onclick="editComponent('${componentId}')">✏️</button>
+                    <button class="toolbar-btn" onclick="deleteComponent('${componentId}')">🗑️</button>
+                `;
+                componentElement.appendChild(toolbar);
+
+                // Add component content
+                const content = document.createElement('div');
+                content.className = 'component-content';
+                content.innerHTML = '<p>Click to edit this text...</p>';
+                componentElement.appendChild(content);
+
+                // Add click handler for selection
+                componentElement.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectComponent(componentId);
+                });
+
+                canvas.appendChild(componentElement);
+                // Don't auto-select - let user click to open properties
             }, 100);
         }
 
@@ -1960,6 +2073,18 @@
             
             // Recompile preview with appropriate CSS
             compilePreview();
+        }
+
+        // Helper function to convert RGB to Hex
+        function rgbToHex(rgb) {
+            const result = rgb.match(/\d+/g);
+            if (result && result.length >= 3) {
+                const r = parseInt(result[0]);
+                const g = parseInt(result[1]);
+                const b = parseInt(result[2]);
+                return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+            }
+            return '#ffffff';
         }
 
         // Utility functions
