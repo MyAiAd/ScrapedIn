@@ -102,6 +102,218 @@
             flex-direction: column;
         }
 
+        .view-toggle {
+            display: flex;
+            gap: 5px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 2px;
+            background: #f8f9fa;
+        }
+
+        .view-toggle .btn {
+            margin: 0;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 0.8rem;
+        }
+
+        .visual-editor {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+        }
+
+        .visual-editor.active {
+            display: flex;
+        }
+
+        .component-palette {
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .component-item {
+            padding: 10px 15px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .component-item:hover {
+            border-color: #0077b5;
+            background: #f0f8ff;
+            transform: translateY(-2px);
+        }
+
+        .component-item:active {
+            cursor: grabbing;
+        }
+
+        .visual-canvas {
+            flex: 1;
+            background: #f5f5f5;
+            overflow-y: auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        .email-canvas {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            min-height: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .drop-zone {
+            min-height: 100px;
+            border: 2px dashed #e9ecef;
+            border-radius: 8px;
+            margin: 10px;
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.drag-over {
+            border-color: #0077b5;
+            background: #f0f8ff;
+            color: #0077b5;
+        }
+
+        .drop-zone:empty::before {
+            content: "Drop components here or click + to add content";
+        }
+
+        .visual-component {
+            margin: 5px;
+            padding: 15px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .visual-component:hover {
+            border-color: #0077b5;
+            background: rgba(0, 119, 181, 0.02);
+        }
+
+        .visual-component.selected {
+            border-color: #0077b5;
+            background: rgba(0, 119, 181, 0.05);
+        }
+
+        .component-toolbar {
+            position: absolute;
+            top: -35px;
+            right: 0;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 5px;
+            display: none;
+            z-index: 10;
+        }
+
+        .visual-component:hover .component-toolbar,
+        .visual-component.selected .component-toolbar {
+            display: flex;
+        }
+
+        .toolbar-btn {
+            background: none;
+            border: none;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 12px;
+            border-radius: 3px;
+            transition: background 0.2s;
+        }
+
+        .toolbar-btn:hover {
+            background: #f8f9fa;
+        }
+
+        .code-editor {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .code-editor.active {
+            display: flex;
+        }
+
+        .properties-panel {
+            position: fixed;
+            right: -300px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: white;
+            border-left: 1px solid #e9ecef;
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .properties-panel.open {
+            right: 0;
+        }
+
+        .properties-header {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+            display: flex;
+            justify-content: between;
+            align-items: center;
+        }
+
+        .properties-content {
+            padding: 15px;
+        }
+
+        .property-group {
+            margin-bottom: 20px;
+        }
+
+        .property-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .property-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .property-input:focus {
+            border-color: #0077b5;
+            outline: none;
+        }
+
         .preview-panel {
             flex: 1;
             background: white;
@@ -315,6 +527,11 @@
             </select>
         </div>
         
+        <div class="view-toggle">
+            <button class="btn btn-secondary" id="codeViewBtn" onclick="switchView('code')">📝 Code View</button>
+            <button class="btn btn-primary" id="visualViewBtn" onclick="switchView('visual')">🎨 Visual Editor</button>
+        </div>
+        
         <button class="btn btn-primary" onclick="compilePreview()">🔄 Preview</button>
         <button class="btn btn-success" onclick="saveTemplate()">💾 Save Template</button>
         <button class="btn btn-secondary" onclick="exportHTML()">📤 Export HTML</button>
@@ -326,16 +543,19 @@
     <div class="main-container">
         <!-- Editor Panel -->
         <div class="editor-panel">
-            <div class="panel-header">
-                <span>Template Code</span>
-                <div>
-                    <button class="btn btn-secondary btn-small" onclick="insertComponent('section')">+ Section</button>
-                    <button class="btn btn-secondary btn-small" onclick="insertComponent('text')">+ Text</button>
-                    <button class="btn btn-secondary btn-small" onclick="insertComponent('button')">+ Button</button>
+            
+            <!-- Code Editor View -->
+            <div class="code-editor active" id="codeEditor">
+                <div class="panel-header">
+                    <span>Template Code</span>
+                    <div>
+                        <button class="btn btn-secondary btn-small" onclick="insertComponent('section')">+ Section</button>
+                        <button class="btn btn-secondary btn-small" onclick="insertComponent('text')">+ Text</button>
+                        <button class="btn btn-secondary btn-small" onclick="insertComponent('button')">+ Button</button>
+                    </div>
                 </div>
-            </div>
-            <div class="editor-container">
-                <textarea id="mjmlEditor">
+                <div class="editor-container">
+                    <textarea id="mjmlEditor">
 <mjml>
   <mj-head>
     <mj-title>ScrapedIn Email Template</mj-title>
@@ -388,6 +608,49 @@
   </mj-body>
 </mjml>
                 </textarea>
+                </div>
+            </div>
+
+            <!-- Visual Editor View -->
+            <div class="visual-editor" id="visualEditor">
+                <div class="panel-header">
+                    <span>Visual Editor</span>
+                    <div>
+                        <button class="btn btn-secondary btn-small" onclick="togglePropertiesPanel()">⚙️ Properties</button>
+                    </div>
+                </div>
+                
+                <!-- Component Palette -->
+                <div class="component-palette">
+                    <div class="component-item" draggable="true" data-component="text">
+                        📝 Text
+                    </div>
+                    <div class="component-item" draggable="true" data-component="heading">
+                        📰 Heading
+                    </div>
+                    <div class="component-item" draggable="true" data-component="button">
+                        🔘 Button
+                    </div>
+                    <div class="component-item" draggable="true" data-component="image">
+                        🖼️ Image
+                    </div>
+                    <div class="component-item" draggable="true" data-component="divider">
+                        ➖ Divider
+                    </div>
+                    <div class="component-item" draggable="true" data-component="spacer">
+                        ⬜ Spacer
+                    </div>
+                    <div class="component-item" draggable="true" data-component="section">
+                        📦 Section
+                    </div>
+                </div>
+
+                <!-- Visual Canvas -->
+                <div class="visual-canvas">
+                    <div class="email-canvas" id="emailCanvas">
+                        <div class="drop-zone" id="mainDropZone"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -410,9 +673,23 @@
         </div>
     </div>
 
+    <!-- Properties Panel -->
+    <div class="properties-panel" id="propertiesPanel">
+        <div class="properties-header">
+            <span>Properties</span>
+            <button class="toolbar-btn" onclick="togglePropertiesPanel()">✕</button>
+        </div>
+        <div class="properties-content" id="propertiesContent">
+            <p>Select a component to edit its properties</p>
+        </div>
+    </div>
+
     <script>
         let editor;
         let currentDeviceView = 'desktop';
+        let currentView = 'visual'; // 'visual' or 'code'
+        let selectedComponent = null;
+        let componentCounter = 0;
 
         // Initialize CodeMirror editor
         document.addEventListener('DOMContentLoaded', function() {
@@ -431,9 +708,453 @@
 
             editor.on('change', debounce(compilePreview, 1000));
             
+            // Initialize visual editor
+            initializeVisualEditor();
+            
+            // Start with visual editor
+            switchView('visual');
+            
             // Initial preview
             setTimeout(compilePreview, 500);
         });
+
+        // Switch between code and visual editor views
+        function switchView(view) {
+            currentView = view;
+            const codeEditor = document.getElementById('codeEditor');
+            const visualEditor = document.getElementById('visualEditor');
+            const codeViewBtn = document.getElementById('codeViewBtn');
+            const visualViewBtn = document.getElementById('visualViewBtn');
+
+            if (view === 'code') {
+                codeEditor.classList.add('active');
+                visualEditor.classList.remove('active');
+                codeViewBtn.classList.add('btn-primary');
+                codeViewBtn.classList.remove('btn-secondary');
+                visualViewBtn.classList.add('btn-secondary');
+                visualViewBtn.classList.remove('btn-primary');
+                
+                // Convert visual to code if needed
+                syncVisualToCode();
+            } else {
+                codeEditor.classList.remove('active');
+                visualEditor.classList.add('active');
+                visualViewBtn.classList.add('btn-primary');
+                visualViewBtn.classList.remove('btn-secondary');
+                codeViewBtn.classList.add('btn-secondary');
+                codeViewBtn.classList.remove('btn-primary');
+                
+                // Convert code to visual if needed
+                syncCodeToVisual();
+            }
+        }
+
+        // Initialize visual editor functionality
+        function initializeVisualEditor() {
+            setupDragAndDrop();
+            loadInitialContent();
+        }
+
+        // Setup drag and drop functionality
+        function setupDragAndDrop() {
+            const componentItems = document.querySelectorAll('.component-item');
+            const dropZone = document.getElementById('mainDropZone');
+
+            // Make component items draggable
+            componentItems.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+            });
+
+            // Setup drop zone
+            dropZone.addEventListener('dragover', handleDragOver);
+            dropZone.addEventListener('drop', handleDrop);
+            dropZone.addEventListener('dragenter', handleDragEnter);
+            dropZone.addEventListener('dragleave', handleDragLeave);
+        }
+
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.component);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            e.target.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.target.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.target.classList.remove('drag-over');
+            
+            const componentType = e.dataTransfer.getData('text/plain');
+            addVisualComponent(componentType, e.target);
+        }
+
+        // Add visual component to canvas
+        function addVisualComponent(type, container) {
+            componentCounter++;
+            const componentId = `component_${componentCounter}`;
+            
+            const componentElement = document.createElement('div');
+            componentElement.className = 'visual-component';
+            componentElement.dataset.id = componentId;
+            componentElement.dataset.type = type;
+            
+            // Add component toolbar
+            const toolbar = document.createElement('div');
+            toolbar.className = 'component-toolbar';
+            toolbar.innerHTML = `
+                <button class="toolbar-btn" onclick="editComponent('${componentId}')">✏️</button>
+                <button class="toolbar-btn" onclick="deleteComponent('${componentId}')">🗑️</button>
+            `;
+            componentElement.appendChild(toolbar);
+
+            // Add component content based on type
+            const content = createComponentContent(type);
+            componentElement.appendChild(content);
+
+            // Add click handler for selection
+            componentElement.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectComponent(componentId);
+            });
+
+            // Add to container
+            if (container.classList.contains('drop-zone') && container.children.length === 0) {
+                container.appendChild(componentElement);
+            } else {
+                container.appendChild(componentElement);
+            }
+
+            // Auto-select the new component
+            selectComponent(componentId);
+        }
+
+        // Create component content based on type
+        function createComponentContent(type) {
+            const content = document.createElement('div');
+            content.className = 'component-content';
+
+            switch(type) {
+                case 'text':
+                    content.innerHTML = '<p>Edit this text content...</p>';
+                    break;
+                case 'heading':
+                    content.innerHTML = '<h2>Edit this heading...</h2>';
+                    break;
+                case 'button':
+                    content.innerHTML = '<button style="background: #0077b5; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Click Here</button>';
+                    break;
+                case 'image':
+                    content.innerHTML = '<div style="background: #f8f9fa; padding: 40px; text-align: center; border: 2px dashed #e9ecef;">📷 Image Placeholder</div>';
+                    break;
+                case 'divider':
+                    content.innerHTML = '<hr style="border: 1px solid #e9ecef; margin: 20px 0;">';
+                    break;
+                case 'spacer':
+                    content.innerHTML = '<div style="height: 20px; background: rgba(0,119,181,0.1); border: 1px dashed #0077b5;">Spacer (20px)</div>';
+                    break;
+                case 'section':
+                    content.innerHTML = '<div style="background: #f8f9fa; padding: 20px; border: 2px dashed #e9ecef; text-align: center;">New Section</div>';
+                    break;
+                default:
+                    content.innerHTML = '<p>Unknown component</p>';
+            }
+
+            return content;
+        }
+
+        // Select component for editing
+        function selectComponent(componentId) {
+            // Clear previous selection
+            document.querySelectorAll('.visual-component.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // Select new component
+            const component = document.querySelector(`[data-id="${componentId}"]`);
+            if (component) {
+                component.classList.add('selected');
+                selectedComponent = componentId;
+                showComponentProperties(component);
+            }
+        }
+
+        // Show component properties in panel
+        function showComponentProperties(component) {
+            const type = component.dataset.type;
+            const content = document.getElementById('propertiesContent');
+            
+            let propertiesHTML = `<h4>Edit ${type.charAt(0).toUpperCase() + type.slice(1)}</h4>`;
+            
+            switch(type) {
+                case 'text':
+                case 'heading':
+                    propertiesHTML += `
+                        <div class="property-group">
+                            <label class="property-label">Text Content:</label>
+                            <textarea class="property-input" rows="3" onchange="updateComponentProperty('text', this.value)" placeholder="Enter text content...">${component.querySelector('.component-content').textContent}</textarea>
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Font Size:</label>
+                            <input type="number" class="property-input" onchange="updateComponentProperty('fontSize', this.value)" placeholder="16" min="8" max="72">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Text Color:</label>
+                            <input type="color" class="property-input" onchange="updateComponentProperty('color', this.value)" value="#333333">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Text Align:</label>
+                            <select class="property-input" onchange="updateComponentProperty('align', this.value)">
+                                <option value="left">Left</option>
+                                <option value="center">Center</option>
+                                <option value="right">Right</option>
+                            </select>
+                        </div>
+                    `;
+                    break;
+                case 'button':
+                    propertiesHTML += `
+                        <div class="property-group">
+                            <label class="property-label">Button Text:</label>
+                            <input type="text" class="property-input" onchange="updateComponentProperty('text', this.value)" placeholder="Click Here">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Button URL:</label>
+                            <input type="url" class="property-input" onchange="updateComponentProperty('href', this.value)" placeholder="https://example.com">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Background Color:</label>
+                            <input type="color" class="property-input" onchange="updateComponentProperty('backgroundColor', this.value)" value="#0077b5">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Text Color:</label>
+                            <input type="color" class="property-input" onchange="updateComponentProperty('color', this.value)" value="#ffffff">
+                        </div>
+                    `;
+                    break;
+                case 'image':
+                    propertiesHTML += `
+                        <div class="property-group">
+                            <label class="property-label">Image URL:</label>
+                            <input type="url" class="property-input" onchange="updateComponentProperty('src', this.value)" placeholder="https://example.com/image.jpg">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Alt Text:</label>
+                            <input type="text" class="property-input" onchange="updateComponentProperty('alt', this.value)" placeholder="Image description">
+                        </div>
+                        <div class="property-group">
+                            <label class="property-label">Width:</label>
+                            <input type="number" class="property-input" onchange="updateComponentProperty('width', this.value)" placeholder="600" min="50" max="800">
+                        </div>
+                    `;
+                    break;
+                case 'spacer':
+                    propertiesHTML += `
+                        <div class="property-group">
+                            <label class="property-label">Height (px):</label>
+                            <input type="number" class="property-input" onchange="updateComponentProperty('height', this.value)" placeholder="20" min="5" max="200">
+                        </div>
+                    `;
+                    break;
+            }
+
+            content.innerHTML = propertiesHTML;
+            
+            // Open properties panel
+            document.getElementById('propertiesPanel').classList.add('open');
+        }
+
+        // Update component property
+        function updateComponentProperty(property, value) {
+            if (!selectedComponent) return;
+            
+            const component = document.querySelector(`[data-id="${selectedComponent}"]`);
+            if (!component) return;
+
+            const content = component.querySelector('.component-content');
+            const type = component.dataset.type;
+
+            switch(property) {
+                case 'text':
+                    if (type === 'heading') {
+                        content.querySelector('h2').textContent = value;
+                    } else if (type === 'text') {
+                        content.querySelector('p').textContent = value;
+                    } else if (type === 'button') {
+                        content.querySelector('button').textContent = value;
+                    }
+                    break;
+                case 'fontSize':
+                    if (type === 'text') {
+                        content.querySelector('p').style.fontSize = value + 'px';
+                    } else if (type === 'heading') {
+                        content.querySelector('h2').style.fontSize = value + 'px';
+                    }
+                    break;
+                case 'color':
+                    if (type === 'text') {
+                        content.querySelector('p').style.color = value;
+                    } else if (type === 'heading') {
+                        content.querySelector('h2').style.color = value;
+                    } else if (type === 'button') {
+                        content.querySelector('button').style.color = value;
+                    }
+                    break;
+                case 'backgroundColor':
+                    if (type === 'button') {
+                        content.querySelector('button').style.backgroundColor = value;
+                    }
+                    break;
+                case 'href':
+                    // Store URL for later conversion to MJML
+                    component.dataset.href = value;
+                    break;
+                case 'src':
+                    if (type === 'image') {
+                        content.innerHTML = `<img src="${value}" style="max-width: 100%; height: auto;" alt="${component.dataset.alt || ''}">`;
+                    }
+                    break;
+                case 'alt':
+                    component.dataset.alt = value;
+                    break;
+                case 'width':
+                    if (type === 'image') {
+                        const img = content.querySelector('img');
+                        if (img) img.style.width = value + 'px';
+                    }
+                    break;
+                case 'height':
+                    if (type === 'spacer') {
+                        content.querySelector('div').style.height = value + 'px';
+                        content.querySelector('div').textContent = `Spacer (${value}px)`;
+                    }
+                    break;
+                case 'align':
+                    if (type === 'text') {
+                        content.querySelector('p').style.textAlign = value;
+                    } else if (type === 'heading') {
+                        content.querySelector('h2').style.textAlign = value;
+                    }
+                    break;
+            }
+        }
+
+        // Delete component
+        function deleteComponent(componentId) {
+            const component = document.querySelector(`[data-id="${componentId}"]`);
+            if (component && confirm('Delete this component?')) {
+                component.remove();
+                
+                // Close properties panel if this component was selected
+                if (selectedComponent === componentId) {
+                    selectedComponent = null;
+                    document.getElementById('propertiesPanel').classList.remove('open');
+                }
+            }
+        }
+
+        // Toggle properties panel
+        function togglePropertiesPanel() {
+            document.getElementById('propertiesPanel').classList.toggle('open');
+        }
+
+        // Load initial content in visual editor
+        function loadInitialContent() {
+            // Add a sample text component to get started
+            setTimeout(() => {
+                addVisualComponent('text', document.getElementById('mainDropZone'));
+            }, 100);
+        }
+
+        // Sync visual editor to code
+        function syncVisualToCode() {
+            const components = document.querySelectorAll('#emailCanvas .visual-component');
+            let mjmlCode = `<mjml>
+  <mj-head>
+    <mj-title>ScrapedIn Email Template</mj-title>
+    <mj-preview>Your LinkedIn outreach made easy</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="Arial, sans-serif"/>
+    </mj-attributes>
+  </mj-head>
+  <mj-body>
+`;
+
+            components.forEach(component => {
+                const type = component.dataset.type;
+                const content = component.querySelector('.component-content');
+                
+                mjmlCode += `    <mj-section padding="20px">
+      <mj-column>
+`;
+                
+                switch(type) {
+                    case 'text':
+                        const textContent = content.querySelector('p');
+                        mjmlCode += `        <mj-text font-size="${textContent.style.fontSize || '16px'}" color="${textContent.style.color || '#333333'}" align="${textContent.style.textAlign || 'left'}">
+          ${textContent.textContent}
+        </mj-text>
+`;
+                        break;
+                    case 'heading':
+                        const headingContent = content.querySelector('h2');
+                        mjmlCode += `        <mj-text font-size="${headingContent.style.fontSize || '24px'}" color="${headingContent.style.color || '#333333'}" align="${headingContent.style.textAlign || 'left'}" font-weight="bold">
+          ${headingContent.textContent}
+        </mj-text>
+`;
+                        break;
+                    case 'button':
+                        const buttonContent = content.querySelector('button');
+                        mjmlCode += `        <mj-button background-color="${buttonContent.style.backgroundColor || '#0077b5'}" color="${buttonContent.style.color || '#ffffff'}" href="${component.dataset.href || '#'}">
+          ${buttonContent.textContent}
+        </mj-button>
+`;
+                        break;
+                    case 'image':
+                        const imgContent = content.querySelector('img');
+                        if (imgContent) {
+                            mjmlCode += `        <mj-image src="${imgContent.src}" alt="${component.dataset.alt || ''}" width="${imgContent.style.width || '600px'}"/>
+`;
+                        }
+                        break;
+                    case 'divider':
+                        mjmlCode += `        <mj-divider border-color="#e9ecef"/>
+`;
+                        break;
+                    case 'spacer':
+                        const spacerHeight = content.querySelector('div').style.height || '20px';
+                        mjmlCode += `        <mj-spacer height="${spacerHeight}"/>
+`;
+                        break;
+                }
+                
+                mjmlCode += `      </mj-column>
+    </mj-section>
+`;
+            });
+
+            mjmlCode += `  </mj-body>
+</mjml>`;
+
+            editor.setValue(mjmlCode);
+        }
+
+        // Sync code to visual editor (simplified version)
+        function syncCodeToVisual() {
+            // For now, just ensure there's at least one component
+            const canvas = document.getElementById('mainDropZone');
+            if (canvas.children.length === 0) {
+                loadInitialContent();
+            }
+        }
 
         // Debounce function for auto-preview
         function debounce(func, wait) {
