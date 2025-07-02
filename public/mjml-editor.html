@@ -1099,53 +1099,85 @@
                 const type = component.dataset.type;
                 const content = component.querySelector('.component-content');
                 
-                mjmlCode += `    <mj-section padding="20px">
+                if (type === 'section') {
+                    // Handle section components differently
+                    const sectionDiv = content.querySelector('div');
+                    const backgroundColor = sectionDiv.style.backgroundColor || 'white';
+                    const padding = sectionDiv.style.padding || '20px';
+                    
+                    mjmlCode += `    <mj-section background-color="${backgroundColor}" padding="${padding}">
       <mj-column>
 `;
-                
-                switch(type) {
-                    case 'text':
-                        const textContent = content.querySelector('p');
-                        mjmlCode += `        <mj-text font-size="${textContent.style.fontSize || '16px'}" color="${textContent.style.color || '#333333'}" align="${textContent.style.textAlign || 'left'}">
+                    
+                    // Add child elements
+                    const childElements = sectionDiv.querySelectorAll('div > p, div > h2');
+                    childElements.forEach(child => {
+                        if (child.tagName === 'P') {
+                            mjmlCode += `        <mj-text font-size="${child.style.fontSize || '16px'}" color="${child.style.color || '#333333'}" align="${child.style.textAlign || 'left'}">
+          ${child.textContent}
+        </mj-text>
+`;
+                        } else if (child.tagName === 'H2') {
+                            mjmlCode += `        <mj-text font-size="${child.style.fontSize || '24px'}" color="${child.style.color || '#333333'}" align="${child.style.textAlign || 'left'}" font-weight="bold">
+          ${child.textContent}
+        </mj-text>
+`;
+                        }
+                    });
+                    
+                    mjmlCode += `      </mj-column>
+    </mj-section>
+`;
+                } else {
+                    // Handle regular components
+                    mjmlCode += `    <mj-section padding="20px">
+      <mj-column>
+`;
+                    
+                    switch(type) {
+                        case 'text':
+                            const textContent = content.querySelector('p');
+                            mjmlCode += `        <mj-text font-size="${textContent.style.fontSize || '16px'}" color="${textContent.style.color || '#333333'}" align="${textContent.style.textAlign || 'left'}">
           ${textContent.textContent}
         </mj-text>
 `;
-                        break;
-                    case 'heading':
-                        const headingContent = content.querySelector('h2');
-                        mjmlCode += `        <mj-text font-size="${headingContent.style.fontSize || '24px'}" color="${headingContent.style.color || '#333333'}" align="${headingContent.style.textAlign || 'left'}" font-weight="bold">
+                            break;
+                        case 'heading':
+                            const headingContent = content.querySelector('h2');
+                            mjmlCode += `        <mj-text font-size="${headingContent.style.fontSize || '24px'}" color="${headingContent.style.color || '#333333'}" align="${headingContent.style.textAlign || 'left'}" font-weight="bold">
           ${headingContent.textContent}
         </mj-text>
 `;
-                        break;
-                    case 'button':
-                        const buttonContent = content.querySelector('button');
-                        mjmlCode += `        <mj-button background-color="${buttonContent.style.backgroundColor || '#0077b5'}" color="${buttonContent.style.color || '#ffffff'}" href="${component.dataset.href || '#'}">
+                            break;
+                        case 'button':
+                            const buttonContent = content.querySelector('button');
+                            mjmlCode += `        <mj-button background-color="${buttonContent.style.backgroundColor || '#0077b5'}" color="${buttonContent.style.color || '#ffffff'}" href="${component.dataset.href || '#'}">
           ${buttonContent.textContent}
         </mj-button>
 `;
-                        break;
-                    case 'image':
-                        const imgContent = content.querySelector('img');
-                        if (imgContent) {
-                            mjmlCode += `        <mj-image src="${imgContent.src}" alt="${component.dataset.alt || ''}" width="${imgContent.style.width || '600px'}"/>
+                            break;
+                        case 'image':
+                            const imgContent = content.querySelector('img');
+                            if (imgContent) {
+                                mjmlCode += `        <mj-image src="${imgContent.src}" alt="${component.dataset.alt || ''}" width="${imgContent.style.width || '600px'}"/>
 `;
-                        }
-                        break;
-                    case 'divider':
-                        mjmlCode += `        <mj-divider border-color="#e9ecef"/>
+                            }
+                            break;
+                        case 'divider':
+                            mjmlCode += `        <mj-divider border-color="#e9ecef"/>
 `;
-                        break;
-                    case 'spacer':
-                        const spacerHeight = content.querySelector('div').style.height || '20px';
-                        mjmlCode += `        <mj-spacer height="${spacerHeight}"/>
+                            break;
+                        case 'spacer':
+                            const spacerHeight = content.querySelector('div').style.height || '20px';
+                            mjmlCode += `        <mj-spacer height="${spacerHeight}"/>
 `;
-                        break;
-                }
-                
-                mjmlCode += `      </mj-column>
+                            break;
+                    }
+                    
+                    mjmlCode += `      </mj-column>
     </mj-section>
 `;
+                }
             });
 
             mjmlCode += `  </mj-body>
@@ -1184,66 +1216,107 @@
             }
         }
 
-        // Simple MJML parser to extract basic components
+        // Enhanced MJML parser to extract sections and components
         function parseMJMLComponents(mjmlCode) {
             const components = [];
             
-            // Extract mj-text components
-            const textMatches = mjmlCode.match(/<mj-text[^>]*>(.*?)<\/mj-text>/gs);
-            if (textMatches) {
-                textMatches.forEach(match => {
-                    const content = match.replace(/<mj-text[^>]*>/, '').replace(/<\/mj-text>/, '').trim();
-                    const attrs = extractAttributes(match);
+            // Extract mj-section components with their contents
+            const sectionMatches = mjmlCode.match(/<mj-section[^>]*>(.*?)<\/mj-section>/gs);
+            if (sectionMatches) {
+                sectionMatches.forEach(sectionMatch => {
+                    const sectionAttrs = extractAttributes(sectionMatch);
+                    const sectionContent = sectionMatch.replace(/<mj-section[^>]*>/, '').replace(/<\/mj-section>/, '');
                     
-                    const isHeading = attrs['font-weight'] === 'bold' && 
-                                     (parseInt(attrs['font-size']) > 20 || content.length < 50);
+                    // Check if section has styling (background color, etc.)
+                    const hasBackground = sectionAttrs['background-color'] && sectionAttrs['background-color'] !== 'white';
                     
-                    components.push({
-                        type: isHeading ? 'heading' : 'text',
-                        content: content,
-                        fontSize: attrs['font-size'] || '16px',
-                        color: attrs['color'] || '#333333',
-                        align: attrs['align'] || 'left'
-                    });
-                });
-            }
-            
-            // Extract mj-button components
-            const buttonMatches = mjmlCode.match(/<mj-button[^>]*>(.*?)<\/mj-button>/gs);
-            if (buttonMatches) {
-                buttonMatches.forEach(match => {
-                    const content = match.replace(/<mj-button[^>]*>/, '').replace(/<\/mj-button>/, '').trim();
-                    const attrs = extractAttributes(match);
-                    
-                    components.push({
-                        type: 'button',
-                        content: content,
-                        backgroundColor: attrs['background-color'] || '#0077b5',
-                        color: attrs['color'] || '#ffffff',
-                        href: attrs['href'] || '#'
-                    });
-                });
-            }
-            
-            // Extract mj-divider components
-            const dividerMatches = mjmlCode.match(/<mj-divider[^>]*\/?>/g);
-            if (dividerMatches) {
-                dividerMatches.forEach(() => {
-                    components.push({
-                        type: 'divider'
-                    });
-                });
-            }
-            
-            // Extract mj-spacer components
-            const spacerMatches = mjmlCode.match(/<mj-spacer[^>]*\/?>/g);
-            if (spacerMatches) {
-                spacerMatches.forEach(match => {
-                    const attrs = extractAttributes(match);
-                    components.push({
-                        type: 'spacer',
-                        height: attrs['height'] || '20px'
-                    });
+                    if (hasBackground) {
+                        // Create a section component that contains multiple elements
+                        const sectionData = {
+                            type: 'section',
+                            backgroundColor: sectionAttrs['background-color'] || 'white',
+                            padding: sectionAttrs['padding'] || '20px',
+                            children: []
+                        };
+                        
+                        // Parse components within this section
+                        const textMatches = sectionContent.match(/<mj-text[^>]*>(.*?)<\/mj-text>/gs);
+                        if (textMatches) {
+                            textMatches.forEach(match => {
+                                const content = match.replace(/<mj-text[^>]*>/, '').replace(/<\/mj-text>/, '').trim();
+                                const attrs = extractAttributes(match);
+                                
+                                const isHeading = attrs['font-weight'] === 'bold' && 
+                                                (parseInt(attrs['font-size']) > 20 || content.length < 50);
+                                
+                                sectionData.children.push({
+                                    type: isHeading ? 'heading' : 'text',
+                                    content: content,
+                                    fontSize: attrs['font-size'] || '16px',
+                                    color: attrs['color'] || '#333333',
+                                    align: attrs['align'] || 'left'
+                                });
+                            });
+                        }
+                        
+                        components.push(sectionData);
+                    } else {
+                        // Parse individual components in regular sections
+                        const textMatches = sectionContent.match(/<mj-text[^>]*>(.*?)<\/mj-text>/gs);
+                        if (textMatches) {
+                            textMatches.forEach(match => {
+                                const content = match.replace(/<mj-text[^>]*>/, '').replace(/<\/mj-text>/, '').trim();
+                                const attrs = extractAttributes(match);
+                                
+                                const isHeading = attrs['font-weight'] === 'bold' && 
+                                                (parseInt(attrs['font-size']) > 20 || content.length < 50);
+                                
+                                components.push({
+                                    type: isHeading ? 'heading' : 'text',
+                                    content: content,
+                                    fontSize: attrs['font-size'] || '16px',
+                                    color: attrs['color'] || '#333333',
+                                    align: attrs['align'] || 'left'
+                                });
+                            });
+                        }
+                        
+                        const buttonMatches = sectionContent.match(/<mj-button[^>]*>(.*?)<\/mj-button>/gs);
+                        if (buttonMatches) {
+                            buttonMatches.forEach(match => {
+                                const content = match.replace(/<mj-button[^>]*>/, '').replace(/<\/mj-button>/, '').trim();
+                                const attrs = extractAttributes(match);
+                                
+                                components.push({
+                                    type: 'button',
+                                    content: content,
+                                    backgroundColor: attrs['background-color'] || '#0077b5',
+                                    color: attrs['color'] || '#ffffff',
+                                    href: attrs['href'] || '#'
+                                });
+                            });
+                        }
+                        
+                        const dividerMatches = sectionContent.match(/<mj-divider[^>]*\/?>/g);
+                        if (dividerMatches) {
+                            dividerMatches.forEach(() => {
+                                components.push({
+                                    type: 'divider'
+                                });
+                            });
+                        }
+                        
+                        const spacerMatches = sectionContent.match(/<mj-spacer[^>]*\/?>/g);
+                        if (spacerMatches) {
+                            spacerMatches.forEach(match => {
+                                const attrs = extractAttributes(match);
+                                components.push({
+                                    type: 'spacer',
+                                    height: attrs['height'] || '20px'
+                                });
+                            });
+                        }
+                    }
                 });
             }
             
@@ -1337,6 +1410,56 @@
                     spacerDiv.style.border = '1px dashed #0077b5';
                     spacerDiv.textContent = `Spacer (${height}px)`;
                     content.appendChild(spacerDiv);
+                    break;
+                    
+                case 'section':
+                    const sectionDiv = document.createElement('div');
+                    sectionDiv.style.backgroundColor = componentData.backgroundColor;
+                    sectionDiv.style.padding = componentData.padding;
+                    sectionDiv.style.borderRadius = '8px';
+                    sectionDiv.style.margin = '5px 0';
+                    
+                    // Add children components to section
+                    if (componentData.children && componentData.children.length > 0) {
+                        componentData.children.forEach((child, index) => {
+                            const childElement = document.createElement('div');
+                            childElement.style.marginBottom = index < componentData.children.length - 1 ? '10px' : '0';
+                            
+                            switch(child.type) {
+                                case 'text':
+                                    const p = document.createElement('p');
+                                    p.textContent = child.content;
+                                    p.style.fontSize = child.fontSize;
+                                    p.style.color = child.color;
+                                    p.style.textAlign = child.align;
+                                    p.style.margin = '0';
+                                    childElement.appendChild(p);
+                                    break;
+                                    
+                                case 'heading':
+                                    const h2 = document.createElement('h2');
+                                    h2.textContent = child.content;
+                                    h2.style.fontSize = child.fontSize;
+                                    h2.style.color = child.color;
+                                    h2.style.textAlign = child.align;
+                                    h2.style.margin = '0';
+                                    childElement.appendChild(h2);
+                                    break;
+                            }
+                            
+                            sectionDiv.appendChild(childElement);
+                        });
+                    } else {
+                        // Empty section placeholder
+                        const placeholder = document.createElement('div');
+                        placeholder.textContent = 'Section Content';
+                        placeholder.style.textAlign = 'center';
+                        placeholder.style.color = '#999';
+                        placeholder.style.fontStyle = 'italic';
+                        sectionDiv.appendChild(placeholder);
+                    }
+                    
+                    content.appendChild(sectionDiv);
                     break;
             }
             
