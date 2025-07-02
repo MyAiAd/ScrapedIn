@@ -735,7 +735,9 @@
                 visualViewBtn.classList.remove('btn-primary');
                 
                 // Convert visual to code if needed
-                syncVisualToCode();
+                if (document.querySelectorAll('#emailCanvas .visual-component').length > 0) {
+                    syncVisualToCode();
+                }
             } else {
                 codeEditor.classList.remove('active');
                 visualEditor.classList.add('active');
@@ -744,7 +746,7 @@
                 codeViewBtn.classList.add('btn-secondary');
                 codeViewBtn.classList.remove('btn-primary');
                 
-                // Convert code to visual if needed
+                // Convert code to visual
                 syncCodeToVisual();
             }
         }
@@ -1154,11 +1156,200 @@
 
         // Sync code to visual editor (simplified version)
         function syncCodeToVisual() {
-            // For now, just ensure there's at least one component
+            const mjmlCode = editor.getValue();
+            updateVisualFromMJML(mjmlCode);
+        }
+
+        // Update visual editor from MJML code
+        function updateVisualFromMJML(mjmlCode) {
+            // Clear existing visual components
             const canvas = document.getElementById('mainDropZone');
-            if (canvas.children.length === 0) {
+            canvas.innerHTML = '';
+            
+            // Close properties panel
+            document.getElementById('propertiesPanel').classList.remove('open');
+            selectedComponent = null;
+            
+            // Simple MJML parser to extract components
+            const components = parseMJMLComponents(mjmlCode);
+            
+            // Create visual components
+            components.forEach(componentData => {
+                createVisualFromData(componentData, canvas);
+            });
+            
+            // If no components were parsed, add a default text component
+            if (components.length === 0) {
                 loadInitialContent();
             }
+        }
+
+        // Simple MJML parser to extract basic components
+        function parseMJMLComponents(mjmlCode) {
+            const components = [];
+            
+            // Extract mj-text components
+            const textMatches = mjmlCode.match(/<mj-text[^>]*>(.*?)<\/mj-text>/gs);
+            if (textMatches) {
+                textMatches.forEach(match => {
+                    const content = match.replace(/<mj-text[^>]*>/, '').replace(/<\/mj-text>/, '').trim();
+                    const attrs = extractAttributes(match);
+                    
+                    const isHeading = attrs['font-weight'] === 'bold' && 
+                                     (parseInt(attrs['font-size']) > 20 || content.length < 50);
+                    
+                    components.push({
+                        type: isHeading ? 'heading' : 'text',
+                        content: content,
+                        fontSize: attrs['font-size'] || '16px',
+                        color: attrs['color'] || '#333333',
+                        align: attrs['align'] || 'left'
+                    });
+                });
+            }
+            
+            // Extract mj-button components
+            const buttonMatches = mjmlCode.match(/<mj-button[^>]*>(.*?)<\/mj-button>/gs);
+            if (buttonMatches) {
+                buttonMatches.forEach(match => {
+                    const content = match.replace(/<mj-button[^>]*>/, '').replace(/<\/mj-button>/, '').trim();
+                    const attrs = extractAttributes(match);
+                    
+                    components.push({
+                        type: 'button',
+                        content: content,
+                        backgroundColor: attrs['background-color'] || '#0077b5',
+                        color: attrs['color'] || '#ffffff',
+                        href: attrs['href'] || '#'
+                    });
+                });
+            }
+            
+            // Extract mj-divider components
+            const dividerMatches = mjmlCode.match(/<mj-divider[^>]*\/?>/g);
+            if (dividerMatches) {
+                dividerMatches.forEach(() => {
+                    components.push({
+                        type: 'divider'
+                    });
+                });
+            }
+            
+            // Extract mj-spacer components
+            const spacerMatches = mjmlCode.match(/<mj-spacer[^>]*\/?>/g);
+            if (spacerMatches) {
+                spacerMatches.forEach(match => {
+                    const attrs = extractAttributes(match);
+                    components.push({
+                        type: 'spacer',
+                        height: attrs['height'] || '20px'
+                    });
+                });
+            }
+            
+            return components;
+        }
+
+        // Extract attributes from MJML tag
+        function extractAttributes(tagString) {
+            const attrs = {};
+            const attrRegex = /(\w+(?:-\w+)*)="([^"]*)"/g;
+            let match;
+            
+            while ((match = attrRegex.exec(tagString)) !== null) {
+                attrs[match[1]] = match[2];
+            }
+            
+            return attrs;
+        }
+
+        // Create visual component from parsed data
+        function createVisualFromData(componentData, container) {
+            componentCounter++;
+            const componentId = `component_${componentCounter}`;
+            
+            const componentElement = document.createElement('div');
+            componentElement.className = 'visual-component';
+            componentElement.dataset.id = componentId;
+            componentElement.dataset.type = componentData.type;
+            
+            // Store additional data
+            if (componentData.href) {
+                componentElement.dataset.href = componentData.href;
+            }
+            
+            // Add component toolbar
+            const toolbar = document.createElement('div');
+            toolbar.className = 'component-toolbar';
+            toolbar.innerHTML = `
+                <button class="toolbar-btn" onclick="editComponent('${componentId}')">✏️</button>
+                <button class="toolbar-btn" onclick="deleteComponent('${componentId}')">🗑️</button>
+            `;
+            componentElement.appendChild(toolbar);
+
+            // Add component content based on parsed data
+            const content = document.createElement('div');
+            content.className = 'component-content';
+            
+            switch(componentData.type) {
+                case 'text':
+                    const p = document.createElement('p');
+                    p.textContent = componentData.content;
+                    p.style.fontSize = componentData.fontSize;
+                    p.style.color = componentData.color;
+                    p.style.textAlign = componentData.align;
+                    content.appendChild(p);
+                    break;
+                    
+                case 'heading':
+                    const h2 = document.createElement('h2');
+                    h2.textContent = componentData.content;
+                    h2.style.fontSize = componentData.fontSize;
+                    h2.style.color = componentData.color;
+                    h2.style.textAlign = componentData.align;
+                    content.appendChild(h2);
+                    break;
+                    
+                case 'button':
+                    const button = document.createElement('button');
+                    button.textContent = componentData.content;
+                    button.style.background = componentData.backgroundColor;
+                    button.style.color = componentData.color;
+                    button.style.padding = '10px 20px';
+                    button.style.border = 'none';
+                    button.style.borderRadius = '4px';
+                    button.style.cursor = 'pointer';
+                    content.appendChild(button);
+                    break;
+                    
+                case 'divider':
+                    const hr = document.createElement('hr');
+                    hr.style.border = '1px solid #e9ecef';
+                    hr.style.margin = '20px 0';
+                    content.appendChild(hr);
+                    break;
+                    
+                case 'spacer':
+                    const spacerDiv = document.createElement('div');
+                    const height = parseInt(componentData.height) || 20;
+                    spacerDiv.style.height = height + 'px';
+                    spacerDiv.style.background = 'rgba(0,119,181,0.1)';
+                    spacerDiv.style.border = '1px dashed #0077b5';
+                    spacerDiv.textContent = `Spacer (${height}px)`;
+                    content.appendChild(spacerDiv);
+                    break;
+            }
+            
+            componentElement.appendChild(content);
+
+            // Add click handler for selection
+            componentElement.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectComponent(componentId);
+            });
+
+            // Add to container
+            container.appendChild(componentElement);
         }
 
         // Debounce function for auto-preview
@@ -1254,7 +1445,15 @@
                     templateCode = getBlankTemplate();
             }
 
+            // Update code editor
             editor.setValue(templateCode);
+            
+            // Update visual editor if in visual mode
+            if (currentView === 'visual') {
+                updateVisualFromMJML(templateCode);
+            }
+            
+            // Update preview
             compilePreview();
         }
 
