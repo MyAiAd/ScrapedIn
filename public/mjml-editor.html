@@ -816,6 +816,12 @@
                 
                 // Convert code to visual
                 syncCodeToVisual();
+                
+                // Ensure preview reflects the visual editor state
+                setTimeout(() => {
+                    syncVisualToCode();
+                    compilePreview();
+                }, 100);
             }
         }
 
@@ -1132,17 +1138,27 @@
                     }
                     break;
                 case 'color':
+                    // Ensure we use hex values for consistency
+                    let colorValue = value;
+                    if (colorValue.startsWith('rgb')) {
+                        colorValue = rgbToHex(colorValue);
+                    }
                     if (type === 'text') {
-                        content.querySelector('p').style.color = value;
+                        content.querySelector('p').style.color = colorValue;
                     } else if (type === 'heading') {
-                        content.querySelector('h2').style.color = value;
+                        content.querySelector('h2').style.color = colorValue;
                     } else if (type === 'button') {
-                        content.querySelector('button').style.color = value;
+                        content.querySelector('button').style.color = colorValue;
                     }
                     break;
                 case 'backgroundColor':
+                    // Ensure we use hex values for consistency
+                    let bgColorValue = value;
+                    if (bgColorValue.startsWith('rgb')) {
+                        bgColorValue = rgbToHex(bgColorValue);
+                    }
                     if (type === 'button') {
-                        content.querySelector('button').style.backgroundColor = value;
+                        content.querySelector('button').style.backgroundColor = bgColorValue;
                     }
                     break;
                 case 'href':
@@ -1180,7 +1196,12 @@
                     if (type === 'section') {
                         const sectionDiv = content.querySelector('div');
                         if (sectionDiv) {
-                            sectionDiv.style.backgroundColor = value;
+                            // Ensure we use hex values for consistency
+                            let sectionBgColor = value;
+                            if (sectionBgColor.startsWith('rgb')) {
+                                sectionBgColor = rgbToHex(sectionBgColor);
+                            }
+                            sectionDiv.style.backgroundColor = sectionBgColor;
                         }
                     }
                     break;
@@ -1192,6 +1213,13 @@
                         }
                     }
                     break;
+            }
+            
+            // Auto-update preview when visual components are changed
+            if (currentView === 'visual') {
+                validateVisualToMJMLParity();
+                syncVisualToCode();
+                compilePreview();
             }
         }
 
@@ -1279,8 +1307,13 @@
                 if (type === 'section') {
                     // Handle section components differently
                     const sectionDiv = content.querySelector('div');
-                    const backgroundColor = sectionDiv.style.backgroundColor || 'white';
+                    let backgroundColor = sectionDiv.style.backgroundColor || 'white';
                     const padding = sectionDiv.style.padding || '20px';
+                    
+                    // Convert RGB to hex if needed
+                    if (backgroundColor.startsWith('rgb')) {
+                        backgroundColor = rgbToHex(backgroundColor);
+                    }
                     
                     mjmlCode += `    <mj-section background-color="${backgroundColor}" padding="${padding}">
       <mj-column>
@@ -1290,12 +1323,26 @@
                     const childElements = sectionDiv.querySelectorAll('div > p, div > h2');
                     childElements.forEach(child => {
                         if (child.tagName === 'P') {
-                            mjmlCode += `        <mj-text font-size="${child.style.fontSize || '16px'}" color="${child.style.color || '#333333'}" align="${child.style.textAlign || 'left'}">
+                            let textColor = child.style.color || '#333333';
+                            if (textColor.startsWith('rgb')) {
+                                textColor = rgbToHex(textColor);
+                            }
+                            const fontSize = child.style.fontSize || '16px';
+                            const textAlign = child.style.textAlign || 'left';
+                            
+                            mjmlCode += `        <mj-text font-size="${fontSize}" color="${textColor}" align="${textAlign}">
           ${child.textContent}
         </mj-text>
 `;
                         } else if (child.tagName === 'H2') {
-                            mjmlCode += `        <mj-text font-size="${child.style.fontSize || '24px'}" color="${child.style.color || '#333333'}" align="${child.style.textAlign || 'left'}" font-weight="bold">
+                            let textColor = child.style.color || '#333333';
+                            if (textColor.startsWith('rgb')) {
+                                textColor = rgbToHex(textColor);
+                            }
+                            const fontSize = child.style.fontSize || '24px';
+                            const textAlign = child.style.textAlign || 'left';
+                            
+                            mjmlCode += `        <mj-text font-size="${fontSize}" color="${textColor}" align="${textAlign}" font-weight="bold">
           ${child.textContent}
         </mj-text>
 `;
@@ -1314,21 +1361,44 @@
                     switch(type) {
                         case 'text':
                             const textContent = content.querySelector('p');
-                            mjmlCode += `        <mj-text font-size="${textContent.style.fontSize || '16px'}" color="${textContent.style.color || '#333333'}" align="${textContent.style.textAlign || 'left'}">
+                            let textColor = textContent.style.color || '#333333';
+                            if (textColor.startsWith('rgb')) {
+                                textColor = rgbToHex(textColor);
+                            }
+                            const textFontSize = textContent.style.fontSize || '16px';
+                            const textAlign = textContent.style.textAlign || 'left';
+                            
+                            mjmlCode += `        <mj-text font-size="${textFontSize}" color="${textColor}" align="${textAlign}">
           ${textContent.textContent}
         </mj-text>
 `;
                             break;
                         case 'heading':
                             const headingContent = content.querySelector('h2');
-                            mjmlCode += `        <mj-text font-size="${headingContent.style.fontSize || '24px'}" color="${headingContent.style.color || '#333333'}" align="${headingContent.style.textAlign || 'left'}" font-weight="bold">
+                            let headingColor = headingContent.style.color || '#333333';
+                            if (headingColor.startsWith('rgb')) {
+                                headingColor = rgbToHex(headingColor);
+                            }
+                            const headingFontSize = headingContent.style.fontSize || '24px';
+                            const headingAlign = headingContent.style.textAlign || 'left';
+                            
+                            mjmlCode += `        <mj-text font-size="${headingFontSize}" color="${headingColor}" align="${headingAlign}" font-weight="bold">
           ${headingContent.textContent}
         </mj-text>
 `;
                             break;
                         case 'button':
                             const buttonContent = content.querySelector('button');
-                            mjmlCode += `        <mj-button background-color="${buttonContent.style.backgroundColor || '#0077b5'}" color="${buttonContent.style.color || '#ffffff'}" href="${component.dataset.href || '#'}">
+                            let buttonBgColor = buttonContent.style.backgroundColor || '#0077b5';
+                            let buttonTextColor = buttonContent.style.color || '#ffffff';
+                            if (buttonBgColor.startsWith('rgb')) {
+                                buttonBgColor = rgbToHex(buttonBgColor);
+                            }
+                            if (buttonTextColor.startsWith('rgb')) {
+                                buttonTextColor = rgbToHex(buttonTextColor);
+                            }
+                            
+                            mjmlCode += `        <mj-button background-color="${buttonBgColor}" color="${buttonTextColor}" href="${component.dataset.href || '#'}">
           ${buttonContent.textContent}
         </mj-button>
 `;
@@ -2085,6 +2155,50 @@
                 return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
             }
             return '#ffffff';
+        }
+
+        // Debug function to validate visual-to-MJML parity
+        function validateVisualToMJMLParity() {
+            if (currentView !== 'visual') return;
+            
+            const components = document.querySelectorAll('#emailCanvas .visual-component');
+            let issues = [];
+            
+            components.forEach((component, index) => {
+                const type = component.dataset.type;
+                const content = component.querySelector('.component-content');
+                
+                if (type === 'section') {
+                    const sectionDiv = content.querySelector('div');
+                    if (sectionDiv) {
+                        const bgColor = sectionDiv.style.backgroundColor;
+                        if (bgColor && bgColor.startsWith('rgb')) {
+                            issues.push(`Section ${index + 1}: Background color is in RGB format (${bgColor}) - will be converted to hex for MJML`);
+                        }
+                    }
+                } else if (type === 'text' || type === 'heading') {
+                    const textElement = content.querySelector(type === 'text' ? 'p' : 'h2');
+                    if (textElement && textElement.style.color && textElement.style.color.startsWith('rgb')) {
+                        issues.push(`${type.charAt(0).toUpperCase() + type.slice(1)} ${index + 1}: Text color is in RGB format (${textElement.style.color}) - will be converted to hex for MJML`);
+                    }
+                } else if (type === 'button') {
+                    const buttonElement = content.querySelector('button');
+                    if (buttonElement) {
+                        if (buttonElement.style.backgroundColor && buttonElement.style.backgroundColor.startsWith('rgb')) {
+                            issues.push(`Button ${index + 1}: Background color is in RGB format (${buttonElement.style.backgroundColor}) - will be converted to hex for MJML`);
+                        }
+                        if (buttonElement.style.color && buttonElement.style.color.startsWith('rgb')) {
+                            issues.push(`Button ${index + 1}: Text color is in RGB format (${buttonElement.style.color}) - will be converted to hex for MJML`);
+                        }
+                    }
+                }
+            });
+            
+            if (issues.length > 0) {
+                console.log('Visual-to-MJML conversion notes:', issues);
+            }
+            
+            return issues;
         }
 
         // Utility functions
