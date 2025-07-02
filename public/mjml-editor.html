@@ -251,7 +251,7 @@
         }
 
         .code-editor {
-            display: flex;
+            display: none;
             flex-direction: column;
             flex: 1;
         }
@@ -545,7 +545,7 @@
         <div class="editor-panel">
             
             <!-- Code Editor View -->
-            <div class="code-editor active" id="codeEditor">
+            <div class="code-editor" id="codeEditor">
                 <div class="panel-header">
                     <span>Template Code</span>
                     <div>
@@ -1045,6 +1045,11 @@
                     }
                     break;
             }
+        }
+
+        // Edit component (placeholder - same as selecting it)
+        function editComponent(componentId) {
+            selectComponent(componentId);
         }
 
         // Delete component
